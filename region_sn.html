@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Régions et Infrastructures Educatives</title>
+    <!-- Inclure Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+
+        /* Style pour le formulaire de sélection */
+        #regionSelector {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: white;
+            padding: 10px;
+            z-index: 1000;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Carte des Régions et Infrastructures Educatives</h1>
+    <!-- Conteneur pour la carte -->
+    <div id="map"></div>
+
+    <!-- Formulaire pour sélectionner la région -->
+    <div id="regionSelector">
+        <label for="regionSelect">Sélectionner une région:</label>
+        <select id="regionSelect">
+            <option value="">--Choisir une région--</option>
+            <option value="Thiès">Thiès</option>
+            <option value="Dakar">Dakar</option>
+            <option value="Saint-Louis">Saint-Louis</option>
+            <option value="Tambacounda">Tambacounda</option>
+            <option value="Kaolack">Kaolack</option>
+            <option value="Fatick">Fatick</option>
+            <option value="Kolda">Kolda</option>
+            <option value="Ziguinchor">Ziguinchor</option>
+            <option value="Louga">Louga</option>
+            <option value="Matam">Matam</option>
+            <option value="Kaffrine">Kaffrine</option>
+            <option value="Kédougou">Kédougou</option>
+            <option value="Sédhiou">Sédhiou</option>
+        </select>
+        <button onclick="filterRegion()">Afficher la région</button>
+    </div>
+
+    <!-- Inclure Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Inclure jQuery pour faciliter les requêtes AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // Initialiser la carte
+        var map = L.map('map').setView([14.7465, -17.4575], 7);  // Centrer la carte sur Thiès, Sénégal (latitude, longitude)
+
+        // Définir les fonds de carte
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        var satellite = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        var terrain = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        // Ajouter un fond de carte par défaut
+        osm.addTo(map);
+
+        // Définir les couleurs des régions
+        var regionColors = {
+            "Thiès": "blue",
+            "Dakar": "green",
+            "Saint-Louis": "purple",
+            "Tambacounda": "orange",
+            "Kaolack": "red",
+            "Fatick": "yellow",
+            "Kolda": "pink",
+            "Ziguinchor": "cyan",
+            "Louga": "brown",
+            "Matam": "violet",
+            "Kaffrine": "lime",
+            "Kédougou": "magenta",
+            "Sédhiou": "teal"
+        };
+
+        // Fonction de survol des régions
+        function onFeatureOver(e) {
+            var layer = e.target;
+            layer.setStyle({
+                weight: 5,
+                color: 'black',  // Remplacer par noir lors du survol
+                dashArray: '',
+                fillOpacity: 0.7
+            });
+        }
+
+        function onFeatureOut(e) {
+            var layer = e.target;
+            layer.setStyle({
+                weight: 2,
+                color: '#ff7800',
+                dashArray: '',
+                fillOpacity: 0.5
+            });
+        }
+
+        // Charger les données GeoJSON depuis le fichier PHP pour les régions
+        var regionsLayer = L.geoJSON(null, {
+            onEachFeature: function (feature, layer) {
+                // Ajouter un popup avec le nom de la région
+                if (feature.properties && feature.properties.nomreg) {
+                    layer.bindPopup("Région : " + feature.properties.nomreg);
+                }
+
+                // Appliquer un survol à chaque région
+                layer.on({
+                    mouseover: onFeatureOver,
+                    mouseout: onFeatureOut
+                });
+
+                // Appliquer la couleur spécifique à chaque région
+                var regionName = feature.properties.nomreg;
+                var regionColor = regionColors[regionName] || "gray";  // Utiliser gris par défaut si la région n'est pas dans le tableau
+                layer.setStyle({
+                    color: regionColor,
+                    weight: 2,
+                    opacity: 1,
+                    fillColor: regionColor,
+                    fillOpacity: 0.5
+                });
+            }
+        });
+
+        // Charger les régions depuis le fichier PHP
+        $.getJSON('region_sn.php', function(data) {
+            regionsLayer.addData(data); // Ajouter les régions au layer
+        });
+
+        // Charger les infrastructures éducatives depuis le fichier PHP
+        var infraLayer = L.layerGroup(); // Grouper les infrastructures dans un seul layer
+
+        // Définir les icônes des infrastructures éducatives avec une taille réduite
+        var iconSize = [20, 20];  // Taille réduite pour les icônes
+
+        $.getJSON('infrastructurevillethies.php', function(data) {
+            data.forEach(function(infra) {
+                var lat = infra.latitude;  // Assure-toi que ces champs existent dans tes données
+                var lon = infra.longitude;
+                var objectid = infra.objectid;
+                var descriptif = infra.descriptif;
+                var reg = infra.reg;
+                var cod_reg = infra.cod_reg;
+                var dept = infra.dept;
+                var cod_dept = infra.cod_dept;
+                var cav = infra.cav;
+                var cod_cav = infra.cod_cav;
+                var num_dept = infra.num_dept;
+                var num_cav = infra.num_cav;
+                var arr = infra.arr;
+                var millieu = infra.millieu;
+                var typ_qvh = infra.typ_qvh;
+                var observation = infra.observatio;
+                var commune = infra.commune;
+                var num_commun = infra.num_commun;
+                var cod_commun = infra.cod_commun;
+                var quartier = infra.quartier;
+                var num_quarti = infra.num_quarti;
+                var cod_quarti = infra.cod_quarti;
+                var statut_par = infra.statut_par;
+        
+                if (lat && lon) {
+                    var marker = L.marker([lat, lon], {
+                        icon: L.icon({
+                            iconUrl: 'https://th.bing.com/th/id/R.9cbafc47be0c55390b82babda488ec0b?rik=%2bJXuVH2JPdvJhw&pid=ImgRaw&r=0',  // Remplace avec l'URL de ton icône
+                            iconSize: [15, 15],  // Petit point noir
+                            iconAnchor: [10, 10],
+                            popupAnchor: [0, -10]
+                        })
+                    }).bindPopup(
+                        "<b>Object ID:</b> " + objectid + "<br>" +
+                        "<b>Descriptif:</b> " + descriptif + "<br>" +
+                        "<b>Région:</b> " + reg + "<br>" +
+                        "<b>Code Région:</b> " + cod_reg + "<br>" +
+                        "<b>Département:</b> " + dept + "<br>" +
+                        "<b>Code Département:</b> " + cod_dept + "<br>" +
+                        "<b>CAV:</b> " + cav + "<br>" +
+                        "<b>Code CAV:</b> " + cod_cav + "<br>" +
+                        "<b>Numéro Département:</b> " + num_dept + "<br>" +
+                        "<b>Numéro CAV:</b> " + num_cav + "<br>" +
+                        "<b>Arrondissement:</b> " + arr + "<br>" +
+                        "<b>Milieu:</b> " + millieu + "<br>" +
+                        "<b>Type QVH:</b> " + typ_qvh + "<br>" +
+                        "<b>Observations:</b> " + observation + "<br>" +
+                        "<b>Commune:</b> " + commune + "<br>" +
+                        "<b>Numéro Commune:</b> " + num_commun + "<br>" +
+                        "<b>Code Commune:</b> " + cod_commun + "<br>" +
+                        "<b>Quartier:</b> " + quartier + "<br>" +
+                        "<b>Numéro Quartier:</b> " + num_quarti + "<br>" +
+                        "<b>Code Quartier:</b> " + cod_quarti + "<br>" +
+                        "<b>Statut par:</b> " + statut_par
+                    );
+                    infraLayer.addLayer(marker);  // Ajouter le marqueur au groupe
+                }
+            });
+        });
+        
+
+        // Ajouter un contrôle de couches pour afficher/masquer les régions et infrastructures
+        var layersControl = L.control.layers({
+            "Carte de base": osm,
+            "Satellite": satellite,
+            "Terrain": terrain
+        }, {
+            "Régions": regionsLayer,
+            "Infrastructures Educatives": infraLayer
+        }).addTo(map);
+
+        // Fonction pour afficher ou masquer une seule région
+        function filterRegion() {
+            var regionName = document.getElementById("regionSelect").value;
+
+            // Masquer toutes les régions
+            regionsLayer.eachLayer(function (layer) {
+                if (regionName === "") {
+                    map.addLayer(layer);  // Si aucune région n'est sélectionnée, afficher toutes les régions
+                } else {
+                    if (layer.feature.properties.nomreg === regionName) {
+                        map.addLayer(layer);
+                    } else {
+                        map.removeLayer(layer);
+                    }
+                }
+            });
+        }
+
+
+
+
+
+
+         // Charger les données GeoJSON depuis le fichier PHP
+         fetch('infrastructurevillethies.php') // Remplacez par le nom de votre fichier PHP
+         .then(response => response.json())
+         .then(data => {
+             // Ajouter les données GeoJSON à la carte
+             L.geoJSON(data, {
+                 onEachFeature: (feature, layer) => {
+                     // Ajouter un popup avec les propriétés de chaque infrastructure
+                     const properties = feature.properties;
+                     const popupContent = `
+                         <strong>${properties.descriptif || 'Infrastructure'}</strong><br>
+                         Commune: ${properties.commune || 'N/A'}<br>
+                         Département: ${properties.dept || 'N/A'}<br>
+                         Région: ${properties.reg || 'N/A'}
+                     `;
+                     layer.bindPopup(popupContent);
+                 }
+             }).addTo(map);
+         })
+         .catch(error => console.error('Erreur lors du chargement des données GeoJSON:', error));
+
+    </script>
+</body>
+</html>

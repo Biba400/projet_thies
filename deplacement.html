@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itinéraire dynamique</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            background-color: rgb(217, 241, 239);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 80vh;
+            width: 100%;
+        }
+        #navbar {
+            background-color:#0fc0c0;
+            padding: 10px;
+            text-align: center;
+        }
+        #navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+        #navbar a:hover {
+            background-color: #0056b3;
+        }
+        #controls {
+            margin: 10px;
+        }
+        #footer {
+            background-color: #0fc0c0;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        #footer a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 20px;
+        }
+        #footer a:hover {
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar">
+        <a href="http://localhost/thiespfc/templatepageaccueil/index.html">Page accueil</a>
+        <a href="http://localhost/thiespfc/index.html">Projet </a>
+        <a href="http://localhost/thiespfc/stat.html">Rechercher ecole</a>
+        <a href="http://localhost/thiespfc/index2.html">Sous statut </a>
+        <a href="http://localhost/thiespfc/demographie.html">Population/Commune </a>
+    </div>
+
+    <div id="controls">
+        <button id="locate-btn">Localiser ma position</button>
+        <label for="school-select">Choisir une école :</label>
+        <select id="school-select">
+            <option value="" selected>-- Sélectionner une école --</option>
+        </select>
+        <label for="transport-select">Moyen de transport :</label>
+        <select id="transport-select">
+            <option value="foot" selected>À pied</option>
+            <option value="bicycle">Vélo</option>
+            <option value="car">Moto</option>
+            <option value="bus">Bus</option>
+            <option value="horse">Charrette</option>
+        </select>
+        <button id="route-btn">Tracer l'itinéraire</button>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="footer">
+        <a href="https://www.facebook.com" target="_blank">Facebook</a>
+        <a href="https://twitter.com" target="_blank">Twitter</a>
+        <a href="https://www.instagram.com" target="_blank">Instagram</a>
+        <a href="https://www.youtube.com" target="_blank">YouTube</a>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <script>
+        const map = L.map('map').setView([14.7749, -16.9255], 14); // Centrer sur Thiès
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const schools = []; // Stocker les écoles
+        const schoolSelect = document.getElementById('school-select');
+        const locateBtn = document.getElementById('locate-btn');
+        const routeBtn = document.getElementById('route-btn');
+        const transportSelect = document.getElementById('transport-select');
+        let userLocation = null;
+
+        // Charger les écoles depuis école.php
+        fetch('ecole.php')
+            .then(response => response.json())
+            .then(data => {
+                data.features.forEach(feature => {
+                    const { nom_etabli, latitude, longitude } = feature.properties;
+                    schools.push({ name: nom_etabli, lat: latitude, lng: longitude });
+                    const option = document.createElement('option');
+                    option.value = `${latitude},${longitude}`;
+                    option.textContent = nom_etabli;
+                    schoolSelect.appendChild(option);
+
+                    // Ajouter un marqueur pour chaque école
+                    const marker = L.marker([latitude, longitude]).addTo(map);
+                    marker.bindPopup(nom_etabli);
+                });
+            })
+            .catch(err => console.error('Erreur lors du chargement des écoles:', err));
+
+        // Localiser la position de l'utilisateur
+        locateBtn.addEventListener('click', () => {
+            map.locate({ setView: true, maxZoom: 16 });
+        });
+
+        map.on('locationfound', e => {
+            userLocation = e.latlng;
+            L.marker(userLocation).addTo(map).bindPopup('Vous êtes ici').openPopup();
+        });
+        
+
+        map.on('locationerror', () => {
+            alert('Impossible de localiser votre position.');
+        });
+
+        // Fonction pour obtenir l'icône en fonction du mode de transport
+        function getTransportIcon(transportMode) {
+            let iconUrl = '';
+            switch (transportMode) {
+                case 'foot':
+                    iconUrl = 'man.png'; // Icône pour à pied
+                    break;
+                case 'bicycle':
+                    iconUrl = 'cycling.png'; // Icône pour vélo
+                    break;
+                case 'bus':
+                    iconUrl = 'bus.png'; // Icône pour bus
+                    break;
+                case 'horse':
+                    iconUrl = 'horse-car.png'; // Icône pour charrette
+                    break;
+                case 'car':
+                    iconUrl = 'motorcycle.png'; // Icône pour moto
+                    break;
+            }
+            return L.icon({ iconUrl, iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30] });
+        }
+
+        // Tracer l'itinéraire
+routeBtn.addEventListener('click', () => {
+    if (!userLocation) {
+        // Jouer l'audio pour le premier message
+        const audio1 = new Audio('diack2.mp3');
+        audio1.play();
+        return;
+    }
+    const schoolCoords = schoolSelect.value;
+    if (!schoolCoords) {
+        // Jouer l'audio pour le deuxième message
+        const audio2 = new Audio('diack1.mp3');
+        audio2.play();
+        return;
+    }
+    const [schoolLat, schoolLng] = schoolCoords.split(',').map(Number);
+    const transportMode = transportSelect.value;
+
+    const routeControl = L.Routing.control({
+        waypoints: [
+            L.latLng(userLocation.lat, userLocation.lng),
+            L.latLng(schoolLat, schoolLng)
+        ],
+        router: L.Routing.osrmv1({
+            serviceUrl: 'https://router.project-osrm.org/route/v1'
+        }),
+        profile: transportMode,
+        lineOptions: {
+            styles: [{ color: 'blue', weight: 4 }]
+        },
+        createMarker: () => null, // Pas de marqueurs
+        show: false
+    }).addTo(map);
+
+            routeControl.on('routesfound', e => {
+                const route = e.routes[0];
+                const distance = (route.summary.totalDistance / 1000).toFixed(2); // Distance en km
+                const time = (route.summary.totalTime / 60).toFixed(2); // Temps en minutes
+                alert(`Distance: ${distance} km\nTemps estimé: ${time} minutes`);
+
+                // Déplacer un marqueur le long de l'itinéraire avec l'icône appropriée
+                const marker = L.marker(userLocation, { icon: getTransportIcon(transportMode) }).addTo(map);
+                let step = 0;
+                const steps = route.coordinates.length;
+
+                function animateMarker() {
+                    if (step < steps) {
+                        marker.setLatLng(route.coordinates[step]);
+                        step++;
+                        setTimeout(animateMarker, 100);
+                    }
+                }
+                animateMarker();
+            });
+        });
+    </script>
+</body>
+</html>

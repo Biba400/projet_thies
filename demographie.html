@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Démographique de Thiès</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background-color: #004080;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5em;
+            position: relative; /* Nécessaire pour positionner le bouton à l'intérieur */
+        }
+        
+        .map-button {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            background-color: #008CBA; /* Couleur du bouton */
+            color: white;
+            padding: 5px 10°px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .map-button:hover {
+            background-color: #005f73; /* Couleur au survol */
+        }
+
+        .map-itineraire {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            background-color: #008CBA; /* Couleur du bouton */
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .map-itineraire:hover {
+            background-color: #005f73; /* Couleur au survol */
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #map {
+            flex: 7;
+            height: 90%; /* Définit une hauteur de 60% de la fenêtre visible */
+            min-height: 300px; /* Définit une hauteur minimale pour éviter une compression excessive */
+        }
+        
+
+        .charts {
+            flex: 3;
+            padding: 5px;
+            background-color:darkgray;
+            overflow-y: auto;
+        }
+
+        .chart-container {
+            margin-bottom: 60px;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .toggle-button {
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color:#004080;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .legend div {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="http://localhost/thiespfc/index.html" class="map-button">Carte</a>
+        <a href="http://localhost/thiespfc/itineraire.html" class="map-itineraire">Itineraire</a>
+        Carte Démographique - Thiès</div>
+    <div class="container">
+        <div id="map"></div>
+        <div class="charts">
+            <div id="toggle-container" class="toggle-button">
+                <button onclick="toggleCharts()">Afficher / Masquer le Modèle 2</button>
+            </div>
+            <div id="charts-model-1">
+                <!-- Modèle 1: Un histogramme pour chaque commune -->
+            </div>
+            <div id="charts-model-2" style="display: none;">
+                <!-- Modèle 2: Histogrammes alternatifs -->
+            </div>
+            <!-- Bouton pour télécharger le rapport -->
+        <div class="download-button">
+            <button onclick="generatePDF()">Télécharger le rapport PDF</button>
+        </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Initialisation de la carte
+        const map = L.map('map').setView([14.7905, -16.926], 12);
+
+        // Fonds de carte
+        const basemap1 = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'OpenStreetMap'
+        });
+        const basemap2 = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+            attribution: 'OSM France'
+        });
+        const basemap3 = L.tileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=YOUR_API_KEY', {
+            attribution: 'Thunderforest Landscape'
+        });
+
+        basemap1.addTo(map);
+
+        const baseMaps = {
+            'OpenStreetMap': basemap1,
+            'OSM France': basemap2,
+            'Thunderforest': basemap3
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+
+        // Données des communes
+        const communes = {
+            "THIES EST": "#FF0000",
+            "THIES NORD": "#00FF00",
+            "THIES OUEST": "#0000FF"
+        };
+
+        fetch('donneesdemo.php')
+            .then(response => response.json())
+            .then(data => {
+                data.features.forEach(feature => {
+                    const communeName = feature.properties.commune;
+                    const color = communes[communeName] || "#CCCCCC";
+
+                    L.geoJSON(feature, {
+                        style: {
+                            color: color,
+                            weight: 2,
+                            fillOpacity: 0.5
+                        }
+                    }).addTo(map);
+                });
+
+                const legend = L.control({ position: 'bottomright' });
+
+                legend.onAdd = function () {
+                    const div = L.DomUtil.create('div', 'legend');
+                    div.innerHTML = '<strong>Légende des Communes</strong><br>';
+                    Object.keys(communes).forEach(key => {
+                        div.innerHTML += `<div><span style="background:${communes[key]};width:20px;height:10px;display:inline-block;margin-right:5px;"></span>${key}</div>`;
+                    });
+                    return div;
+                };
+
+                legend.addTo(map);
+            });
+
+         // Données d'exemple pour les graphiques
+const data = [
+{
+    commune: "Thies Est",
+    hommes: 78308,
+    femmes: 77968,
+    total: 156276,
+    menages: 19623
+},
+{
+    commune: "Thies Nord",
+    hommes: 68385,
+    femmes: 67753,
+    total: 136138,
+    menages: 15733
+},
+{
+    commune: "Thies Ouest",
+    hommes: 47364,
+    femmes: 47492,
+    total: 94856,
+    menages: 12308
+}
+];
+
+function createChart(container, label, type, data, labels, backgroundColors) {
+const ctx = document.createElement('canvas');
+container.appendChild(ctx);
+
+return new Chart(ctx, {
+    type: type,
+    data: {
+        labels: labels,
+        datasets: [{
+            label: label,
+            data: data,
+            backgroundColor: backgroundColors,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom'
+            }
+        }
+    }
+});
+}
+
+function populateCharts(containerId, model) {
+const container = document.getElementById(containerId);
+container.innerHTML = '';
+data.forEach(d => {
+    const chartContainer = document.createElement('div');
+    chartContainer.className = 'chart-container';
+    container.appendChild(chartContainer);
+
+    if (model === 1) {
+        // Bar chart for Model 1
+        createChart(
+            chartContainer, 
+            d.commune, 
+            'bar', 
+            [d.hommes, d.femmes, d.total, d.menages], 
+            ['Hommes', 'Femmes', 'Total', 'Ménages'], 
+            ['#4CAF50', '#FF9800', '#03A9F4', '#E91E63']
+        );
+    } else {
+        // Pie chart for Model 2
+        createChart(
+            chartContainer, 
+            d.commune, 
+            'pie', 
+            [d.hommes, d.femmes, d.total], 
+            ['Hommes', 'Femmes', 'Total'], 
+            ['#4CAF50', '#FF9800', '#03A9F4']
+        );
+    }
+
+    const title = document.createElement('div');
+    title.className = 'chart-title';
+    title.innerText = `Démographie: ${d.commune}`;
+    chartContainer.appendChild(title);
+});
+}
+
+function toggleCharts() {
+const model1 = document.getElementById('charts-model-1');
+const model2 = document.getElementById('charts-model-2');
+
+if (model2.style.display === 'none') {
+    model2.style.display = 'block';
+    model1.style.display = 'none';
+} else {
+    model2.style.display = 'none';
+    model1.style.display = 'block';
+}
+}
+
+// Initial population of charts
+populateCharts('charts-model-1', 1);
+populateCharts('charts-model-2', 2);
+
+
+
+    // Fonction pour générer et télécharger le rapport en PDF
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Ajout du titre
+        doc.setFontSize(18);
+        doc.text('Rapport Démographique des Communes de Thiès', 10, 10);
+
+        // Ajout du contenu du rapport
+        doc.setFontSize(12);
+        doc.text('Source des données : Agence Nationale de la Statistique et de la Démographie (ANSD)', 10, 20);
+
+        doc.text('1. Thiès Est', 10, 30);
+        doc.text('   - Hommes : 78 308', 10, 40);
+        doc.text('   - Femmes : 77 968', 10, 50);
+        doc.text('   - Total : 156 276', 10, 60);
+        doc.text('   - Ménages : 19 623', 10, 70);
+
+        doc.text('2. Thiès Nord', 10, 80);
+        doc.text('   - Hommes : 68 385', 10, 90);
+        doc.text('   - Femmes : 67 753', 10, 100);
+        doc.text('   - Total : 136 138', 10, 110);
+        doc.text('   - Ménages : 15 733', 10, 120);
+
+        doc.text('3. Thiès Ouest', 10, 130);
+        doc.text('   - Hommes : 47 364', 10, 140);
+        doc.text('   - Femmes : 47 492', 10, 150);
+        doc.text('   - Total : 94 856', 10, 160);
+        doc.text('   - Ménages : 12 308', 10, 170);
+
+        // Ajout d'une conclusion
+        doc.text('Conclusion : Les données montrent des tendances démographiques importantes...', 10, 180);
+
+        // Sauvegarde du PDF
+        doc.save('rapport_demographique_thies.pdf');
+    }
+
+
+ </script>
+</body>
+</html>

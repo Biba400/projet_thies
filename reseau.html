@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Portail SIG - Réseau Géodésique</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-measure/dist/leaflet-measure.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-measure@3.3.1/dist/leaflet-measure.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f4f4;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: url('https://upload.wikimedia.org/wikipedia/commons/9/9c/Senegal_satellite_image.jpg') no-repeat center center/cover;
+      color: rgb(12, 12, 12);
+      text-align: center;
+      height: 400px;
+      position: relative;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('im.jpg') no-repeat center 30% / cover;
+      background-attachment: fixed;
+      opacity: 0.7;
+      z-index: 0;
+    }
+    
+    
+    
+    /* Contenu principal */
+    .main {
+      margin-left: 250px;
+      padding: 20px;
+  }
+
+    header .content {
+      position: relative;
+      z-index: 1;
+      padding-top: 100px;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+    }
+
+    header img.logo {
+      position:absolute; /* 👈 fixe l’image à l’écran */
+      bottom: -85px;
+      left: 460px;
+      height: 85px;
+      
+      z-index: 2000000000000000;
+    }
+
+    header img.logos {
+      position:absolute; /* 👈 fixe l’image à l’écran */
+      bottom: -85px;
+      left: 790px;
+      height: 85px;
+      
+      z-index: 2000000000000000;
+    }
+    header img.logoss {
+      position:absolute; /* 👈 fixe l’image à l’écran */
+      bottom: -85px;
+      left: 1090px;
+      height: 85px;
+      
+      z-index: 2000000000000000;
+    }
+
+    header img.flag {
+      position: fixed; /* 👈 fixe l’image à l’écran */
+      top: 20px;
+      right: 20px;
+      height: 50px;
+      background-attachment: fixed;
+      z-index: 2000000000000000;
+    }
+
+    nav {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 250px;
+      background: #333;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 20px 0;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    nav a:hover {
+      color: #1e90ff;
+    }
+
+    nav .icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    
+
+    .section {
+      margin-bottom: 50px;
+    }
+
+    #map {
+      height: 600px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    select, input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      width: 250px;
+    }
+
+    footer {
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+    }
+
+    footer a {
+      color: #1e90ff;
+      text-decoration: none;
+    }
+    .legend {
+      background: white;
+      line-height: 1.5;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+  
+    .legend h4 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+  
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+  
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      border: 1px solid #999;
+    }
+  
+    .legend-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+    }
+    header img.photo-profil {
+      position: fixed;
+      top: 20px;
+      left: 250px;
+      height: 80px;
+      width: 80px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      object-fit: cover;
+      z-index: 2000000000000000;
+    }
+    
+
+    
+  </style>
+</head>
+<body>
+  <header>
+    <img src='procasef.jpeg' alt="Logo" class="logo">
+    <img src='anat.png' alt="Logos" class="logos">
+    <img src='onges.png' alt="Logoss" class="logoss">
+    <img src='biba.jpg' alt="Ma photo" class="photo-profil">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg" alt="Sénégal" class="flag">
+    <div class="content">
+      <h1> <center>Portail SIG - Réseau Géodésique</center></h1>
+      <p> <STROng>Visualisation des régions et des points géodésiques du Sénégal <br>
+        Réalisé par Abdoul Amdou Diack ~ Technicien Supérieur en Géomatisue <br>
+      De l'UFR SI de Thiés</STROng></p>
+    </div>
+  </header>
+
+  <nav>
+    <a href="http://localhost/thiespfc/groupeprojet2.html"><i class="fas fa-home icon"></i> Accueil</a>
+    <a href="#visualisation"><i class="fas fa-map icon"></i> Cartes</a>
+    <a href="#donnees"><i class="fas fa-database icon"></i> Données</a>
+    <a href="#contact"><i class="fas fa-envelope icon"></i> Contact</a>
+    <a href="http://localhost/communendayen/index3.html"><i class="fas fa-landmark icon"></i>Commune</a>
+
+  </nav>
+  <div id="legend" class="leaflet-control legend"></div>
+
+  <div class="main">
+    <section id="visualisation" class="section">
+      <h2>Carte Interactive</h2>
+      <select id="region-select">
+        <option value="">-- Choisir une région --</option>
+      </select>
+      <input type="text" id="search-point" placeholder="Rechercher un point géodésique" />
+      <div id="itineraire-container" style="margin: 10px;">
+        <input type="text" id="itineraire-nom" placeholder="Nom du point géodésique" style="padding: 5px; width: 200px;">
+        <button id="tracer-itineraire-btn" style="padding: 5px 10px;">Tracer Itinéraire</button>
+      </div>
+      
+      <div id="itineraire-panel" style="
+        position: fixed;
+        top: -200px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 20px;
+        border: 1px solid #ccc;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        transition: top 0.5s ease;
+        z-index: 99999999999999999999999999999999999999999999999999999999999999;
+      ">
+        <button id="fermer-itineraire" style="float:right;">✖</button>
+        <h4>Information Itinéraire</h4>
+        <p><strong>Distance :</strong> <span id="itineraire-distance"></span></p>
+      </div>
+      
+      <div id="map" style="height: 600px;"></div>
+    </section>
+
+    <section id="donnees" class="section">
+      <h2>Données Géospatiales</h2>
+      <p>Explorez les polygones régionaux et les points du réseau géodésique.</p>
+    </section>
+
+    <section id="contact" class="section">
+      <h2>Contact</h2>
+      <p>Pour toute information complémentaire ou suggestion, n'hésitez pas à me contacter :</p>
+<ul>
+  <li>Email : <a href="mailto:diackibrahima447@gmail.com">diackibrahima447@gmail.com</a></li>
+  <li>Téléphone : +221 78 400 99 96</li>
+  <li>Adresse : UFR Sciences de l’Ingénieur, Université de Thiès (Mbour 2, Thiés) </li>
+</ul>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Réseau Géodésique Sénégal - Tous droits réservés</p>
+  </footer>
+
+  <style>
+    .legend {
+      background: white;
+      line-height: 1.5;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    .legend h4 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      border: 1px solid #999;
+    }
+    .legend-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+    }
+  </style>
+
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-measure/dist/leaflet-measure.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-measure@3.3.1/dist/leaflet-measure.min.js"></script>
+
+
+  <script>
+    const map = L.map('map').setView([14.5, -14.5], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    const regionColors = {};
+    const regionLayer = L.geoJSON(null, {
+      style: feature => {
+        const nom = feature.properties.nomreg;
+        if (!regionColors[nom]) {
+          regionColors[nom] = '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
+        return {
+          color: regionColors[nom],
+          weight: 2,
+          fillOpacity: 0.3
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        layer.bindPopup(`<strong>Région : </strong>${feature.properties.nomreg}`);
+      }
+    }).addTo(map);
+
+    fetch('region_sn.php')
+      .then(res => res.json())
+      .then(data => {
+        regionLayer.addData(data);
+        const select = document.getElementById('region-select');
+        data.features.forEach(feat => {
+          const option = document.createElement('option');
+          option.value = feat.properties.nomreg;
+          option.textContent = feat.properties.nomreg;
+          select.appendChild(option);
+        });
+      });
+
+    document.getElementById('region-select').addEventListener('change', function () {
+      const region = this.value;
+      regionLayer.eachLayer(layer => {
+        if (layer.feature.properties.nomreg === region) {
+          map.fitBounds(layer.getBounds());
+          layer.openPopup();
+        }
+      });
+    });
+
+    // Icônes
+    const iconOrdre1 = L.icon({
+      iconUrl: 'premier .png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+
+    const iconOrdre2 = L.icon({
+      iconUrl: 'deuxieme.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+
+    // Correspondance nom du point → page PDF
+    const fichePages = {
+      "Dakar": 1,
+      "Thiès": 2,
+      "Diourbel": 3,
+      "Linguère": 4,
+      "Louga": 5,
+      "St. Louis": 6,
+      "Podor": 7,
+      "Ouro Sogui": 8,
+      "Ranerour": 9,
+      "Kidira": 10,
+      "Tabacounda": 11,
+      "Kedougou": 12,
+      "Kolda": 13,
+      "Ziguinchor": 14,
+      "Diouloulou": 15,
+      "Sokone": 16,
+      "Kaolack": 17,
+      "Koungheul": 18,
+      "Fatick": 19,
+      "Mbour": 20
+    };
+
+    // Points géodésiques
+    let pointsGeodesiques = [];
+
+    fetch('pointbase.php')
+      .then(res => res.json())
+      .then(data => {
+        const layer = L.geoJSON(data, {
+          pointToLayer: (feature, latlng) => {
+            const props = feature.properties;
+            let icon = iconOrdre1;
+            if (props.ordre === 2 || props.ordre === '2') icon = iconOrdre2;
+
+            const nom = props.nom?.trim() || "Inconnu";
+            const page = fichePages[nom] || 1;
+
+            const marker = L.marker(latlng, { icon }).bindPopup(`
+              <strong>${nom}</strong><br>
+              Ordre : ${props.ordre || "N/A"}<br>
+              Xcoordonnée : ${props.xcoord || "N/A"}<br>
+              Ycoordonnée : ${props.ycoord || "N/A"}<br>
+              Altitude : ${props.altitude || "N/A"} m<br>
+              Localité : ${props.localite || "N/A"}<br>
+              <a href="RRS2-Assemblage fiches signalétiques-RRS1 et RSS2.pdf#page=${page}" target="_blank" style="color:blue;text-decoration:underline;">
+                📄 Voir la fiche signalétique
+              </a>
+            `);
+
+            marker.nomPoint = nom.toLowerCase();
+            pointsGeodesiques.push(marker);
+            return marker;
+          }
+        });
+        layer.addTo(map);
+      });
+
+    document.getElementById('search-point').addEventListener('input', function () {
+      const query = this.value.toLowerCase();
+      if (!query) return;
+
+      const match = pointsGeodesiques.find(marker => marker.nomPoint.includes(query));
+      if (match) {
+        map.setView(match.getLatLng(), 13);
+        match.openPopup();
+      }
+    });
+
+    // Légende dynamique
+    const legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = `<h4>Légende</h4>`;
+      for (const [region, color] of Object.entries(regionColors)) {
+        div.innerHTML += `
+          <div class="legend-item">
+            <div class="legend-color" style="background:${color}"></div>
+            ${region}
+          </div>
+        `;
+      }
+      div.innerHTML += `
+        <hr>
+        <div class="legend-item">
+          <img src="premier .png" class="legend-icon" />
+          Ordre 1
+        </div>
+        <div class="legend-item">
+          <img src="deuxieme.png" class="legend-icon" />
+          Ordre 2
+        </div>
+      `;
+      return div;
+    };
+
+    legend.addTo(map);
+  </script>
+ <style>
+  #buffer-sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 350px;
+    height: 100%;
+    background: white;
+    box-shadow: -3px 0 6px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    transition: right 0.5s ease;
+    padding: 20px;
+    z-index:99999999999999999999999;
+  }
+  #buffer-sidebar.active {
+    right: 0;
+  }
+  #close-sidebar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #eee;
+    border: none;
+    padding: 5px 10px;
+  }
+</style>
+
+<div id="buffer-sidebar">
+  <button id="close-sidebar">Fermer</button>
+  <h3>Analyse du buffer</h3>
+  <p><strong>Nombre de points géodésiques :</strong> <span id="point-count">0</span></p>
+  <ul id="point-list"></ul>
+</div>
+
+<script>
+let userMarker;
+let bufferCircle;
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // m
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function showSidebar(points, distances) {
+  document.getElementById("point-count").textContent = points.length;
+  const list = document.getElementById("point-list");
+  list.innerHTML = "";
+  points.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>${p.nom}</strong> - ${distances[i].toFixed(2)} m`;
+    list.appendChild(li);
+  });
+  document.getElementById("buffer-sidebar").classList.add("active");
+}
+
+document.getElementById("close-sidebar").onclick = function() {
+  document.getElementById("buffer-sidebar").classList.remove("active");
+};
+
+function bufferAndAnalyze(latlng, rayon) {
+  if (bufferCircle) map.removeLayer(bufferCircle);
+  bufferCircle = L.circle(latlng, {radius: rayon, color: 'blue'}).addTo(map);
+
+  const found = [];
+  const distances = [];
+
+  pointsGeodesiques.forEach(marker => {
+    const pointLatLng = marker.getLatLng();
+    const d = calculateDistance(latlng.lat, latlng.lng, pointLatLng.lat, pointLatLng.lng);
+    if (d <= rayon) {
+      found.push({ nom: marker.nomPoint });
+      distances.push(d);
+    }
+  });
+
+  showSidebar(found, distances);
+}
+
+function askBufferRadius(position) {
+  const choice = prompt("Entrez un rayon de buffer (ex: 300m ou 1km)");
+  if (!choice) return;
+  let rayon = 0;
+  if (choice.toLowerCase().includes("km")) {
+    rayon = parseFloat(choice) * 1000;
+  } else {
+    rayon = parseFloat(choice);
+  }
+  if (!isNaN(rayon) && rayon > 0) {
+    bufferAndAnalyze(position, rayon);
+  } else {
+    alert("Valeur invalide");
+  }
+}
+
+function locateUser() {
+  map.locate({setView: true, maxZoom: 14});
+}
+
+map.on('locationfound', function(e) {
+  if (userMarker) map.removeLayer(userMarker);
+  userMarker = L.marker(e.latlng).addTo(map)
+    .bindPopup("Vous êtes ici").openPopup();
+  askBufferRadius(e.latlng);
+});
+
+map.on('locationerror', function(e) {
+  alert("Localisation échouée : " + e.message);
+});
+
+// Ajout bouton de géolocalisation
+const locateBtn = L.control({position: 'topleft'});
+locateBtn.onAdd = function(map) {
+  const btn = L.DomUtil.create('button');
+  btn.innerHTML = '<i class="fas fa-crosshairs"></i> Se localiser';
+  btn.style.padding = '8px';
+  btn.style.background = '#fff';
+  btn.style.border = '1px solid #ccc';
+  btn.style.cursor = 'pointer';
+  btn.onclick = locateUser;
+  return btn;
+};
+locateBtn.addTo(map);
+
+// Ajout du contrôle de mesure
+const measureControl = new L.Control.Measure({
+  position: 'topleft',
+  primaryLengthUnit: 'meters',
+  secondaryLengthUnit: 'kilometers',
+  primaryAreaUnit: 'sqmeters',
+  secondaryAreaUnit: 'hectares',
+  activeColor: '#db4a29',
+  completedColor: '#9b2d14'
+});
+measureControl.addTo(map);
+
+
+
+
+
+
+
+</script>
+
+<script>
+  let itineraireLine;
+  
+  document.getElementById("tracer-itineraire-btn").addEventListener("click", () => {
+    const nomRecherche = document.getElementById("itineraire-nom").value.trim().toLowerCase();
+    if (!nomRecherche) return alert("Veuillez entrer un nom de point géodésique.");
+  
+    const pointCible = pointsGeodesiques.find(m => m.nomPoint.toLowerCase().includes(nomRecherche));
+    if (!pointCible) return alert("Point non trouvé.");
+  
+    if (!userMarker) {
+      return alert("Veuillez vous localiser d'abord.");
+    }
+  
+    const userLatLng = userMarker.getLatLng();
+    const targetLatLng = pointCible.getLatLng();
+  
+    // Appel à l'API OSRM pour obtenir l'itinéraire routier
+    const routingUrl = `https://router.project-osrm.org/route/v1/driving/${userLatLng.lng},${userLatLng.lat};${targetLatLng.lng},${targetLatLng.lat}?overview=full&geometries=geojson`;
+  
+    fetch(routingUrl)
+      .then(response => response.json())
+      .then(data => {
+        if (data.routes.length === 0) {
+          alert("Aucun itinéraire trouvé.");
+          return;
+        }
+  
+        // Supprimer l'ancien tracé s'il existe
+        if (itineraireLine) map.removeLayer(itineraireLine);
+  
+        const route = data.routes[0];
+        const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]); // Inverser lng/lat → lat/lng
+  
+        itineraireLine = L.polyline(coords, {
+          color: 'blue',
+          weight: 5
+        }).addTo(map);
+  
+        // Zoom sur l'itinéraire
+        map.fitBounds(itineraireLine.getBounds(), { padding: [30, 30] });
+  
+        // Affichage de la distance
+        const distance = route.distance; // en mètres
+        const duration = route.duration; // en secondes
+  
+        document.getElementById("itineraire-distance").textContent = `${(distance / 1000).toFixed(2)} km (${(duration / 60).toFixed(1)} min)`;
+  
+        // Afficher le panneau animé
+        document.getElementById("itineraire-panel").style.top = "20px";
+      })
+      .catch(err => {
+        console.error("Erreur OSRM :", err);
+        alert("Erreur lors de la récupération de l'itinéraire.");
+      });
+  });
+  
+  // Bouton pour fermer
+  document.getElementById("fermer-itineraire").onclick = () => {
+    document.getElementById("itineraire-panel").style.top = "-200px";
+    if (itineraireLine) map.removeLayer(itineraireLine);
+  };
+  </script>
+  
+  
+</body>
+
+
+</html>

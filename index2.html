@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Écoles</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-layers-minimap/dist/leaflet-minimap.css" />
+    <style>
+        /* Couleur de fond pour la page entière */
+body {
+    background-color:#005f99; /* Choisissez la couleur de votre choix */
+    margin: 0; /* Retire les marges par défaut */
+    font-family: Arial, sans-serif; /* Ajoute une police lisible */
+}
+        #map { height: 550px;}
+        #legend { background-color: white; padding: 10px; position: absolute; bottom: 10px; right: 10px; z-index: 1000; }
+        #legend img { width: 15px; height: 15px; margin-right: 6px; }
+        header {
+            width: 100%;
+            background-color: #005f99;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            height: 30px; /* Augmenter légèrement la hauteur pour faire de la place au bouton */
+            position: relative; /* Permet de positionner le bouton au bon endroit */
+        }
+        
+        /* Style pour le titre */
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+        
+        /* Style pour le sous-titre */
+        header p {
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+        
+        /* Positionnement des drapeaux */
+        header img {
+            position: absolute;
+            top: 10px;
+            width: 50px;
+            height: auto;
+        }
+        
+        header img.left {
+            left: 10px; /* Positionne l'image à gauche */
+        }
+        
+        header img.right {
+            right: 10px; /* Positionne l'image à droite */
+        }
+        /* Style pour le bouton "Page Accueil" */
+.btn-style {
+    background-color: rgb(243, 237, 237);
+    color: rgb(17, 17, 17);
+    padding: 10px 20px;
+    border: none;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none; /* Retirer la décoration de lien */
+    position: absolute;
+    bottom: 0px; /* Remonter le bouton vers le haut du header */
+    left: 48%; /* Garder centré par rapport à l'élément parent */
+    transform: translateX(470%); /* Décaler le bouton vers la droite */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ajouter un léger ombrage */
+}
+
+/* Changement de couleur au survol */
+.btn-style:hover {
+    background-color: black;
+    color: gold;
+}
+
+
+.btn-accueil {
+    background-color: rgb(243, 241, 241);
+    color: rgb(12, 12, 12);
+    padding: 10px 20px;
+    border: none;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none; /* Retirer la décoration de lien */
+    position: absolute;
+    bottom: 0px; /* Remonter le bouton vers le haut du header */
+    left: -23%; /* Garder centré par rapport à l'élément parent */
+    transform: translateX(470%); /* Décaler le bouton vers la droite */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ajouter un léger ombrage */
+}
+
+/* Changement de couleur au survol */
+.btn-accueil:hover {
+    background-color: black;
+    color: gold;
+}
+.btn-itineraire {
+    background-color: rgb(245, 243, 243);
+    color: rgb(19, 18, 18);
+    padding: 10px 20px;
+    border: none;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none; /* Retirer la décoration de lien */
+    position: absolute;
+    bottom: 0px; /* Remonter le bouton vers le haut du header */
+    left: -19%; /* Garder centré par rapport à l'élément parent */
+    transform: translateX(470%); /* Décaler le bouton vers la droite */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ajouter un léger ombrage */
+}
+
+/* Changement de couleur au survol */
+.btn-itineraire:hover {
+    background-color: black;
+    color: gold;
+}
+
+.btn-demographie {
+    background-color: rgb(241, 241, 241);
+    color: rgb(10, 10, 10);
+    padding: 10px 20px;
+    border: none;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none; /* Retirer la décoration de lien */
+    position: absolute;
+    bottom: 0px; /* Remonter le bouton vers le haut du header */
+    left: 53%; /* Garder centré par rapport à l'élément parent */
+    transform: translateX(470%); /* Décaler le bouton vers la droite */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ajouter un léger ombrage */
+}
+
+/* Changement de couleur au survol */
+.btn-demographie:hover {
+    background-color: black;
+    color: gold;
+}
+    </style>
+</head>
+
+<header>
+    <img src="https://cdn3.vectorstock.com/i/1000x1000/33/42/senegal-map-and-flag-vector-47333342.jpg" alt="Drapeau Sénégal" class="left">
+    <p>Gestion de l'accessibilité aux infrastructures de la ville de Thiès</p>
+    <a href="http://localhost/thiespfc/index.html">
+        <button type="button" class="btn-style">Style statut</button>
+    </a>
+    <a href="http://localhost/thiespfc/index.html">
+        <button type="button" class="btn-accueil">Carte Ecole</button>
+    </a>
+    <a href="http://localhost/thiespfc/itineraire.html">
+        <button type="button" class="btn-itineraire">Carte itinéraire</button>
+    </a>
+    <a href="http://localhost/thiespfc/templatepageaccueil/index.html">
+        <button type="button" class="btn-demographie">Page Accueil</button>
+    </a>
+    
+    <img src="https://cdn3.vectorstock.com/i/1000x1000/33/42/senegal-map-and-flag-vector-47333342.jpg" alt="Drapeau Sénégal" class="right">
+    
+</header>
+<div>
+    <label><input type="checkbox" id="Public classique" checked> Public classique</label>
+    <label><input type="checkbox" id="Prive franco arabe" checked> Privé franco arabe</label>
+    <label><input type="checkbox" id="Prive laic" checked> Privé Laïc</label>
+    <label><input type="checkbox" id="Prive Catholique" checked> Privé Catholique</label>
+    <label><input type="checkbox" id="Prive Protestante" checked> Privé Protestante</label>
+</div>
+
+
+<body>
+    
+   
+    
+    <div id="map"></div>
+</select>
+
+    <button onclick="getMyPosition()">Ma Position</button>
+    <button onclick="createBuffer()">Buffer</button>
+    <div id="legend">
+        <h4>Légende des Écoles</h4>
+        <div><img src="im1.png" alt="Public classique"> Public classique</div>
+        <div><img src="im8.png" alt="Prive franco arabe"> Privé franco arabe</div>
+        <div><img src="im6.png" alt="Prive laic"> Privé Laïc</div>
+        <div><img src="im5.png" alt="Prive Catholique"> Privé Catholique</div>
+        <div><img src="im9.png" alt="Prive Protestante"> Privé Protestante</div>
+    </div>
+    <!-- Formulaire de sélection des quartiers -->
+<select id="quartierSelect">
+    <option value="">Sélectionner un quartier</option>
+
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-layers-minimap/dist/leaflet-minimap.js"></script>
+    <script>
+        var map = L.map('map').setView([14.796269119486162, -16.930734080485777], 13); // Centrer la carte sur Thiès
+        
+
+        // Créer les deux fonds de carte
+var esriWorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Données &copy; <a href="https://www.esri.com/en-us/home">Esri</a>',
+    maxZoom: 19
+});
+
+var openStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Données &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+});
+
+// Ajouter les fonds de carte à un objet de contrôle des couches
+// Ajouter les fonds de carte à un objet de contrôle des couches
+var baseMaps = {
+    "Esri World Imagery": esriWorldImagery,
+    "OpenStreetMap": openStreetMap
+};
+
+// Déclaration des couches pour les écoles et les quartiers
+var schoolsLayer = L.layerGroup(); // Groupe pour les écoles
+var quartiersLayer = L.layerGroup(); // Groupe pour les quartiers
+
+// Ajouter le fond de carte OpenStreetMap par défaut
+openStreetMap.addTo(map);
+
+// Ajouter un contrôle pour permettre à l'utilisateur de changer de fond de carte et d'afficher/masquer les couches
+
+L.control.layers(baseMaps, ).addTo(map);
+
+
+// Fonction pour afficher les écoles
+
+
+        // Fonction pour afficher ma position
+        function getMyPosition() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    var marker = L.marker([lat, lng]).addTo(map)
+                        .bindPopup("Votre position")
+                        .openPopup();
+                    map.setView([lat, lng], 13);
+                }, function () {
+                    alert("Erreur lors de l'obtention de votre position.");
+                });
+            } else {
+                alert("La géolocalisation n'est pas supportée par ce navigateur.");
+            }
+        }
+
+        // Fonction pour créer un buffer
+        function createBuffer() {
+            var radius = prompt("Entrez le rayon du buffer en mètres:");
+            if (radius) {
+                var latLng = map.getCenter();
+                var buffer = L.circle(latLng, { radius: radius }).addTo(map);
+                getSchoolsInBuffer(buffer);
+            }
+        }
+
+        // Fonction pour récupérer les écoles dans le buffer
+        function getSchoolsInBuffer(buffer) {
+            var geojsonUrl = 'ecole.php'; // Assurez-vous que ce fichier renvoie le GeoJSON des écoles
+            fetch(geojsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var schoolsInBuffer = 0;
+                    data.features.forEach(function (feature) {
+                        var schoolLatLng = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
+                        if (buffer.getBounds().contains(schoolLatLng)) {
+                            schoolsInBuffer++;
+                            var iconUrl = getIconUrl(feature.properties.sous_statut);
+                            var marker = L.marker(schoolLatLng, { icon: L.icon({ iconUrl: iconUrl, iconSize: [30, 30] }) })
+                            .bindPopup("<strong>" + feature.properties.nom_etabli + "</strong><br>" +
+                            "Commune: " + feature.properties.commune + "<br>" +
+                            "Statut: " + feature.properties.statut + "<br>" +
+                            "Sous-statuts: " + feature.properties.sous_statut + "<br>" +
+                            "Quartier: " + feature.properties.quartier + "<br>" +
+                            
+                            "Nombre d'élèves: " + feature.properties.nombre_eleve + "<br>" +
+                            "Nombre de classes pédagogiques: " + feature.properties.nombre_classe_pédagogiques + "<br>" +
+                            "Nombre de salles physiques: " + feature.properties.nombre_salles_physiques + "<br>" +
+                            "Nombre d'enseignants: " + feature.properties.nombre_enseignants 
+                            );
+                 marker.addTo(map);
+                 
+                        }
+                    });
+                    alert("Il y a " + schoolsInBuffer + " école(s) dans ce rayon.");
+                });
+        }
+
+
+        var markers = {
+            'Public classique': [],
+            'Prive franco arabe': [],
+            'Prive laic': [],
+            'Prive Catholique': [],
+            'Prive Protestante': []
+        };
+
+        // Fonction pour obtenir l'URL de l'icône selon le sous_statu
+        function getIconUrl(sousStatut) {
+            switch (sousStatut) {
+                case 'Public classique':
+                    return 'im1.png';
+                case 'Prive franco arabe':
+                    return 'im8.png';
+                case 'Prive laic':
+                    return 'im6.png';
+                case 'Prive Catholique':
+                    return 'im5.png';
+                case 'Prive Protestante':
+                    return 'im9.png';
+                default:
+                    return 'path_to_images/default.png';
+            }
+        }
+
+        // Fonction pour afficher ou masquer les écoles en fonction de leur sous_statut
+function toggleSchoolDisplay(sousStatut) {
+    var checkbox = document.getElementById(sousStatut);
+    if (checkbox.checked) {
+        displaySchools(sousStatut);
+    } else {
+        removeSchools(sousStatut);
+    }
+}
+
+
+        
+
+        // Fonction pour afficher les écoles
+        function displaySchools() {
+            var geojsonUrl = 'ecole.php'; // Assurez-vous que ce fichier renvoie le GeoJSON des écoles
+            fetch(geojsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    data.features.forEach(function (feature) {
+                        var latLng = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
+                        var iconUrl = getIconUrl(feature.properties.sous_statut);
+                        var marker = L.marker(latLng, { icon: L.icon({ iconUrl: iconUrl, iconSize: [16, 16] }) })
+                        .bindPopup("<strong>" + feature.properties.nom_etabli + "</strong><br>" +
+                        "Commune: " + feature.properties.commune + "<br>" +
+                        "Statut: " + feature.properties.statut + "<br>" +
+                        "Sous-statuts: " + feature.properties.sous_statut + "<br>" +
+                        "Quartier: " + feature.properties.quartier + "<br>" +
+                        
+                        "Nombre d'élèves: " + feature.properties.nombre_eleve + "<br>" +
+                        "Nombre de classes pédagogiques: " + feature.properties.nombre_classe_pédagogiques + "<br>" +
+                        "Nombre de salles physiques: " + feature.properties.nombre_salles_physiques + "<br>" +
+                        "Nombre d'enseignants: " + feature.properties.nombre_enseignants 
+                        );
+             marker.addTo(map);
+             
+                    });
+                });
+        }
+
+
+// Fonction pour retirer les écoles
+function removeSchools(sousStatut) {
+    map.eachLayer(function (layer) {
+        if (layer instanceof L.Marker && layer.options.icon.options.iconUrl === getIconUrl(sousStatut)) {
+            map.removeLayer(layer);
+        }
+    });
+}
+
+// Ajout des événements pour les cases à cocher
+document.getElementById('Public classique').addEventListener('change', function () {
+    toggleSchoolDisplay('Public classique');
+});
+document.getElementById('Prive franco arabe').addEventListener('change', function () {
+    toggleSchoolDisplay('Prive franco arabe');
+});
+document.getElementById('Prive laic').addEventListener('change', function () {
+    toggleSchoolDisplay('Prive laic');
+});
+document.getElementById('Prive Catholique').addEventListener('change', function () {
+    toggleSchoolDisplay('Prive Catholique');
+});
+document.getElementById('Prive Protestante').addEventListener('change', function () {
+    toggleSchoolDisplay('Prive Protestante');
+});
+
+// Appeler la fonction pour afficher les écoles au départ
+displaySchools('Public classique');
+displaySchools('Prive franco arabe');
+displaySchools('Prive laic');
+displaySchools('Prive Catholique');
+displaySchools('Prive Protestante');
+
+
+
+        // Fonction pour afficher les quartiers
+        function displayQuartiers() {
+            var geojsonUrl = 'quartiersvillethies.php'; // Assurez-vous que ce fichier renvoie le GeoJSON des quartiers
+            fetch(geojsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var quartiersLayer = L.geoJSON(data, {
+                        style: function (feature) {
+                            return {
+                                color: '#0000FF',        // Limites en bleu
+                                weight: 2,
+                                fillColor: '#FFFFFF',    // Remplissage en blanc
+                                fillOpacity: 0.00001          // Opacité du remplissage (1 = opaque)
+                            };
+                        },
+                        onEachFeature: function (feature, layer) {
+                            layer.bindPopup("<strong>Quartier:</strong> " + feature.properties.quartier + "<br>" +
+                                "<strong>Commune:</strong> " + feature.properties.commune + "<br>" +
+                                "<strong>Arrondissement:</strong> " + feature.properties.arr + "<br>" +
+                                "<strong>Type:</strong> " + feature.properties.type_qvh);
+                        }
+                    });
+        
+                    quartiersLayer.addTo(map); // Ajouter la couche des quartiers à la carte
+                });
+        }
+
+// Afficher les écoles et les quartiers au démarrage
+displaySchools();
+displayQuartiers();
+        
+
+    </script>
+</body>
+</html>

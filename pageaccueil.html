@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Projet de Fin de Cycle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5Ov8PnRcGMQURVNoJMD7CWGIrZI-VNAsGOg&s') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+    
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1px 10px;
+            background:#FFD700;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+    
+        .navbar a {
+            background-color: black;
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+            padding: 5px 10px; /* Augmente la hauteur du background */
+        }
+        
+    
+        .navbar a:hover {
+            color: #FFD700;
+        }
+    
+        .content {
+            text-align: center;
+            padding: 50px 20px;
+        }
+    
+        .content h1 {
+            font-size: 3rem;
+            margin: 0;
+        }
+    
+        .content p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+    
+        .footer {
+            background: rgba(0, 0, 0, 0.7);
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+    
+        .footer a {
+            color: #FFD700;
+            text-decoration: none;
+        }
+    
+        section {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 80%;
+            text-align: justify;
+        }
+    
+        section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+    
+        ul li {
+            text-align: center;
+            margin: 10px 0;
+        }
+    
+        .remerciements {
+            display: flex;
+            justify-content: space-around;
+            gap: 30px;
+            margin-top: 50px;
+        }
+    
+        .remerciement-item {
+            text-align: center;
+            padding: 20px;
+            width: 45%;
+            transition: transform 0.3s ease;
+        }
+    
+        .remerciement-item:hover {
+            transform: scale(1.05);
+        }
+    
+        .remerciement-item img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%; /* Maintien du format rond pour les images */
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+    
+        .remerciement-text {
+            background-color: #f7f7f7; /* Fond blanc uniquement pour le texte */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+        }
+    
+        .remerciement-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+    
+        .remerciement-text p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+
+
+        .developpeurs {
+            display: flex;
+            justify-content: space-around;
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .developpeur-item {
+            text-align: center;
+            padding: 20px;
+            width: 45%;
+            transition: transform 0.3s ease;
+        }
+        
+        .developpeur-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .developpeur-item img {
+            width: 120px; /* Réduit la taille de l'image */
+            height: 120px; /* Garder la taille réduite */
+            border-radius: 50%; /* L'image sera ronde */
+            object-fit: cover; /* Garde l'image bien cadrée */
+            margin-bottom: 20px;
+        }
+        
+        .developpeur-text {
+            background-color: #f7f7f7; /* Fond blanc uniquement pour le texte */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+        }
+        
+        .developpeur-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .developpeur-text p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .drapeau {
+            width: 50px; /* Taille du drapeau */
+            height: auto; /* Maintient les proportions */
+        }
+        
+        .drapeau.gauche {
+            width: 85px; /* Augmente la largeur du drapeau */
+            margin-right: 20px; /* Espace entre le drapeau gauche et les liens */
+        }
+
+
+        .logo-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .drapeau.droite {
+            width: 85px; /* Augmente la largeur du drapeau */
+            margin-left: 20px; /* Espace entre le drapeau de droite et les liens */
+        }
+
+        .navbar-images {
+            display: flex;
+            justify-content: center; /* Centre les images */
+            align-items: center;
+            margin-top: 5px; /* Espace entre les boutons et les images */
+        }
+        
+        .navbar-images img {
+            width: 300px; /* Taille des images */
+            height: 110px; /* Assure la même taille pour toutes les images */
+            margin: 2; /* Pas d'espace entre les images */
+            object-fit: cover; /* Assure que les images conservent leurs proportions */
+        }
+        
+    </style>
+    
+
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <h2> 
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj4En36lluFuw8Yy-7aOpzrI8WZB61-dJc5w&s" alt="Drapeau Sénégal" class="drapeau gauche">
+            </h2>
+        </div>
+        <div class="menu">
+            <a href="#apropos">À propos</a>
+            <a href="http://localhost/thiespfc/index.html">Projet</a>
+            <a href="http://localhost/thiespfc/itineraire.html">Tracer itineraire</a>
+            <a href="#developpeurs">Développeurs</a>
+            <a href="http://localhost/thiespfc/deplacement.html">deplacement dynamique</a>
+        </div>
+        <div class="logo-right">
+            <h2>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj4En36lluFuw8Yy-7aOpzrI8WZB61-dJc5w&s" alt="Drapeau Sénégal" class="drapeau droite">
+            </h2>
+        </div>
+    </div>
+
+    <div class="navbar-images">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbKzYWEaNNOJ_TQBwQrxzTu9qzZrSoaAfv2g&s" alt="Image 1">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDGvjdlFv0yha0VI_PUgPrtnlfZETuKRA5ZQ&s" alt="Image 2">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-ZhVGIL_B_CzhLOdKevdWJQgL1A3EP2BjZQ&s" alt="Image 3">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCHHF-2xUxMtBJ7BC-NE_85jrLYC4EEal1kg&s" alt="Image 4">
+    </div>
+
+    <div class="content">
+        <h1>Bienvenue sur GeoAccess</h1>
+        <p>Une solution innovante pour la gestion et l'accessibilité aux infrastructures éducatives de la ville de Thiès.</p>
+    </div>
+
+    <section id="apropos">
+        <h2>À propos</h2>
+        <p>
+            Ce projet vise à optimiser la gestion et à améliorer l'accessibilité aux infrastructures éducatives de la ville de Thiès grâce à un Géoportail WebSIG innovant. Ce portail repose sur les principes fondamentaux de la géomatique, qui combine cartographie, systèmes d'information géographique (SIG) et technologies numériques avancées pour offrir une représentation claire et dynamique des données spatiales.
+
+            Grâce à des outils géomatiques performants, nous avons collecté des informations géoréférencées sur les infrastructures éducatives, telles que leur localisation, leur capacité d'accueil, leur état, et leur proximité par rapport aux populations environnantes. Ces données ont été analysées pour identifier les zones insuffisamment desservies et les écarts en termes d'accès à l'éducation.
+            
+            La géomatique joue un rôle central dans ce projet en permettant non seulement de visualiser les infrastructures existantes, mais aussi de modéliser des scénarios d'amélioration, tels que la création de nouvelles écoles ou l'amélioration des accès aux infrastructures actuelles. De plus, l'intégration de technologies WebSIG rend les données accessibles de manière interactive à un large public, y compris les décideurs, les urbanistes et les citoyens.
+            
+            En utilisant la géomatique, ce projet contribue à une gestion plus efficace et durable des infrastructures éducatives, tout en renforçant leur accessibilité pour les habitants de Thiès. Cela illustre parfaitement le potentiel des SIG pour répondre aux défis sociaux et environnementaux en soutenant une prise de décision éclairée et fondée sur des données fiables.
+        </p>
+    </section>
+
+    <section id="developpeurs">
+        <h2>Développeurs</h2>
+        <div class="developpeurs">
+            <!-- Développeur 1 -->
+            <div class="developpeur-item">
+                <img src='diack1.jpg'  alt="Abdoul Amadou Diack">
+                <div class="developpeur-text">
+                    <h3>Abdoul Amadou Diack</h3>
+                    <p>Ce projet a été une expérience enrichissante et formatrice qui m'a permis de développer et de renforcer mes compétences techniques. En travaillant sur la conception et le développement du Géoportail WebSIG, j'ai acquis une maîtrise approfondie des outils de géomatique et des technologies Web, notamment en matière de collecte, d'analyse et de visualisation de données spatiales.
+
+                        Cette expérience m'a également permis de perfectionner mes capacités à résoudre des problématiques complexes et à collaborer efficacement dans un environnement de projet exigeant. Grâce à ce projet, j'ai pu mettre en pratique mes connaissances tout en explorant de nouvelles approches innovantes, ce qui a été un atout majeur pour ma progression professionnelle et personnelle.</p>
+                </div>
+            </div>
+    
+            <!-- Développeur 2 -->
+            <div class="developpeur-item">
+                <img src='lo.jpg' alt="Meissa Lo">
+                <div class="developpeur-text">
+                    <h3>Meissa Lo </h3>
+                    <p>Ce projet a été une opportunité exceptionnelle pour approfondir mes compétences et renforcer ma compréhension des technologies liées aux systèmes d'information géographique (SIG). En participant activement au processus de développement, j'ai pu perfectionner mes aptitudes à résoudre des problèmes complexes et à intégrer des solutions innovantes dans un environnement collaboratif.
+
+                        Cette expérience m'a également permis d'explorer de nouvelles technologies et de mieux comprendre leur application pratique dans la mise en place d'un Géoportail WebSIG. Le travail sur ce projet m'a enrichi professionnellement, en consolidant ma capacité à concevoir et à mettre en œuvre des solutions répondant aux besoins spécifiques en matière de gestion et d'accessibilité des infrastructures éducatives.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="remerciements">
+        <h2>Remerciements</h2>
+        <div class="remerciements">
+            <!-- Remerciement Encadrant -->
+            <div class="remerciement-item">
+                <img src="https://pbs.twimg.com/profile_images/1778566695004602368/5Zr89JXt_400x400.jpg" alt="Docteur Alphousseyni Ndonky">
+                <div class="remerciement-text">
+                    <h3>Docteur Alphousseyni Ndonky</h3>
+                    <p>Nous sommes infiniment reconnaissants à notre encadrant, <strong>Docteur Alphousseyni Ndonky</strong>, pour son incommensurable soutien, ses conseils avisés et sa bienveillance tout au long de ce projet. Grâce à sa vision éclairée et son expertise, ce travail a pris toute sa dimension. Il a su nous guider avec patience, rigueur et sagesse, et c'est un honneur de l'avoir eu comme mentor.</p>
+                </div>
+            </div>
+    
+            <!-- Remerciement Formateur -->
+            <div class="remerciement-item">
+                <img src='ndour.jpg' alt="Docteur Mouhammadou Moustapha Mbacké Ndour">
+                <div class="remerciement-text">
+                    <h3>Docteur Mouhammadou Moustapha Mbacké Ndour</h3>
+                    <p>Nos remerciements les plus sincères vont également à notre formateur principal, <strong>Docteur Mouhammadou Moustapha Mbacké Ndour</strong>, pour son dévouement et son expertise inestimables. Sa disponibilité constante, sa pédagogie hors pair et ses encouragements ont été des éléments clés dans l'accomplissement de ce projet. Nous lui exprimons notre plus profonde gratitude pour avoir su nous guider avec tant de bienveillance et de professionnalisme.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        <p>&copy; 2024 - Projet réalisé par Abdoul Amadou Diack et Meissa Lo</p>
+    </div>
+</body>
+</html>

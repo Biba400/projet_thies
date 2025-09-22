@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Écoles à Thiès</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        /* Style pour l'arrière-plan de la page */
+        body {
+            background-color: #005f99; /* Bleu clair */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    
+        /* Centrer et styliser le titre */
+        h1 {
+            text-align: center;
+            padding: 10px 0; /* Réduire le padding */
+            color: white; /* Bleu foncé */
+            font-size: 20px; /* Garder la taille du texte du titre */
+        }
+    
+        /* Styliser la carte */
+        #map {
+            top: -20px;
+            width: 100%;
+            height: 600px; /* Réduire la hauteur de la carte */
+            border: 2px solid #005f99;
+            border-radius: 10px;
+            margin: 10px auto; /* Réduire la marge */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    
+        /* Styliser les boutons et les éléments du menu */
+        button, select, input {
+            margin: 5px; /* Réduire les marges pour compacter l'espace */
+            padding: 3px; /* Réduire les espaces internes des boutons */
+            font-size: 10px; /* Réduire la taille du texte dans les boutons */
+            border: 1px solid #005f99;
+            border-radius: 5px;
+        }
+    
+        /* Changer l'apparence au survol */
+        button:hover, select:hover, input:hover {
+            background-color: #cceeff; /* Bleu clair au survol */
+        }
+    
+        /* Positionner les boutons en haut à gauche */
+        .btn-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px; /* Espacement entre les boutons */
+        }
+    
+        /* Styliser les informations sous la carte */
+        #bufferInfo {
+            text-align: center;
+            font-size: 12px; /* Augmenter légèrement la taille de la police pour les informations */
+            color: #333;
+            padding: 5px; /* Réduire le padding */
+        }
+    </style>
+</head>
+<body>
+    <h1>
+        <strong>Carte Interactive d'Itinéraires et d'Analyse de Distances des Écoles de Thiès</strong>
+    </h1>
+<div class="btn-container">
+    <a href="http://localhost/thiespfc/templatepageaccueil/index.html">
+        <button type="button" class="btn-style">Accueil</button>
+    </a>
+    <a href="http://localhost/thiespfc/index.html">
+        <button type="button" class="btn-style">Carte</button>
+    </a>
+    
+    <a href="http://localhost/thiespfc/index2.html">
+        <button type="button" class="btn-style">Sous Statut</button>
+    </a>
+    <a href="http://localhost/thiespfc/stat.html">
+        <button type="button" class="btn-style">Buffer/Infos</button>
+    </a>
+</div>
+<div id="map" style="width: 100%; height: 500px;"></div>
+<button id="locateMe">Ma position</button>
+<input type="text" id="schoolName" placeholder="Nom de l'école" />
+<button id="findSchool">Tracer l'itinéraire</button>
+<select id="schoolFilter">
+    <option value="all">Toutes les écoles</option>
+    <option value="Public">Écoles publiques</option>
+    <option value="Prive">Écoles privées</option>
+</select>
+<input type="number" id="bufferRadius" placeholder="Rayon (mètres)" />
+<button id="applyBuffer">Appliquer le buffer</button>
+<p id="distanceInfo"></p>
+
+    <script>
+        // Initialiser la carte
+        const map = L.map('map').setView([14.798, -16.932], 13); // Coordonnées approximatives de Thiès
+
+        // Ajouter un fond de carte
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        let schoolsLayer;
+let userLatLng = null; // Position de l'utilisateur
+let routeLayer = null; // Couche pour l'itinéraire
+let bufferCircle = null; // Cercle du buffer
+let quartiersLayer; // Couche pour les quartiers
+
+// Définir les icônes pour les écoles
+const publicIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/128/3074/3074078.png', // Chemin de l'icône pour les écoles publiques
+    iconSize: [16, 16], // Taille de l'icône
+    iconAnchor: [12, 25], // Ancrage de l'icône
+    popupAnchor: [0, -20] // Position de la popup par rapport à l'icône
+});
+
+const privateIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/128/3874/3874147.png', // Chemin de l'icône pour les écoles privées
+    iconSize: [16, 16],
+    iconAnchor: [12, 25],
+    popupAnchor: [0, -20]
+});
+
+// Charger les données GeoJSON pour les écoles
+$.getJSON('ecole.php', function (data) {
+    schoolsLayer = L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+            // Choisir l'icône en fonction du statut
+            const icon = feature.properties.statut === 'Public' ? publicIcon : privateIcon;
+            return L.marker(latlng, { icon: icon });
+        },
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup(
+                `<b>${feature.properties.nom_etabli}</b><br>
+Commune: ${feature.properties.commune}<br>
+Statut: ${feature.properties.statut}<br>
+Sous-statuts: ${feature.properties.sous_statut}<br>
+Quartier: ${feature.properties.quartier}<br>
+
+Nombre d'élèves: ${feature.properties.nombre_eleve}<br>
+Nombre de classes pédagogiques: ${feature.properties.nombre_classe_pédagogiques}<br>
+Nombre de salles physiques: ${feature.properties.nombre_salles_physiques}<br>
+Nombre d'enseignants: ${feature.properties.nombre_enseignants}<br>
+Nombre de garçon: ${feature.properties.garçon}<br>
+Nombre de fille: ${feature.properties.fille}
+
+`
+            );
+        }
+    }).addTo(map);
+});
+
+// Filtrer les écoles par statut
+$('#schoolFilter').on('change', function () {
+    const filterValue = $(this).val();
+
+    if (schoolsLayer) {
+        map.removeLayer(schoolsLayer);
+    }
+
+    $.getJSON('ecole.php', function (data) {
+        schoolsLayer = L.geoJSON(data, {
+            filter: function (feature) {
+                return filterValue === 'all' || feature.properties.statut === filterValue;
+            },
+            pointToLayer: function (feature, latlng) {
+                const icon = feature.properties.statut === 'Public' ? publicIcon : privateIcon;
+                return L.marker(latlng, { icon: icon });
+            },
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup(
+                    `<b>${feature.properties.nom_etabli}</b><br>
+Commune: ${feature.properties.commune}<br>
+Statut: ${feature.properties.statut}<br>
+Sous-statuts: ${feature.properties.sous_statut}<br>
+Quartier: ${feature.properties.quartier}<br>
+
+Nombre d'élèves: ${feature.properties.nombre_eleve}<br>
+Nombre de classes pédagogiques: ${feature.properties.nombre_classe_pédagogiques}<br>
+Nombre de salles physiques: ${feature.properties.nombre_salles_physiques}<br>
+Nombre d'enseignants: ${feature.properties.nombre_enseignants}
+`
+                );
+            }
+        }).addTo(map);
+    });
+});
+
+// Charger les données GeoJSON pour les quartiers
+$.getJSON('quartiersvillethies.php', function (data) {
+    quartiersLayer = L.geoJSON(data, {
+        style: function (feature) {
+            return {
+                color: '#000000', // Couleur des contours
+                weight: 2,
+                fillColor: '#FFFFFF', // Couleur de remplissage
+                fillOpacity: 0.001
+            };
+        },
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup(
+                `<b>${feature.properties.quartier}</b><br>Commune: ${feature.properties.commune}<br>Arrondissement: ${feature.properties.arr}<br>Type: ${feature.properties.type_qvh}`
+            );
+        }
+    }).addTo(map);
+});
+
+// Ajouter une légende à la carte
+const legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function () {
+    const div = L.DomUtil.create('div', 'info legend');
+    div.style.backgroundColor = '#005f99'; // Arrière-plan blanc avec opacité
+    div.style.padding = '10px'; // Ajouter un peu d'espace intérieur
+    div.style.borderRadius = '5px'; // Coins arrondis
+    div.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.2)'; // Ombre légère
+
+    div.innerHTML = `
+    <h4>Légende</h4>
+    <div>
+        <img src="https://cdn-icons-png.flaticon.com/128/3074/3074078.png" style="width: 16px; height: 16px;"> Écoles Publiques
+    </div>
+    <div>
+        <img src="https://cdn-icons-png.flaticon.com/128/3874/3874147.png" style="width: 16px; height: 16px;"> Écoles Privées
+    </div>
+    <div style="display: flex; align-items: center;">
+        <span style="display: inline-block; width: 20px; height: 20px; background: #FFFFFF; border: 2px solid #000;"></span>
+        <span style="margin-left: 5px;">Quartiers</span>
+    </div>
+`;
+return div;
+};
+
+legend.addTo(map);
+
+
+        // Bouton pour récupérer la position de l'utilisateur
+        $('#locateMe').on('click', function () {
+            if (!navigator.geolocation) {
+                alert('La géolocalisation n\'est pas prise en charge par votre navigateur.');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(function (position) {
+                userLatLng = [position.coords.latitude, position.coords.longitude];
+
+                // Ajouter un marqueur pour la position de l'utilisateur
+                L.marker(userLatLng, { icon: L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png' }) })
+                    .addTo(map)
+                    .bindPopup('Vous êtes ici.')
+                    .openPopup();
+
+                map.setView(userLatLng, 14);
+            }, function () {
+                alert('Impossible de récupérer votre position.');
+            });
+        });
+
+        // Fonction pour tracer l'itinéraire
+        $('#findSchool').on('click', function () {
+            if (!userLatLng) {
+                alert('Veuillez d\'abord indiquer votre position en cliquant sur "Ma position".');
+                return;
+            }
+
+            const schoolName = $('#schoolName').val().toLowerCase();
+            let targetLatLng;
+
+            // Trouver les coordonnées de l'école choisie
+            schoolsLayer.eachLayer(function (layer) {
+                if (layer.feature.properties.nom_etabli.toLowerCase() === schoolName) {
+                    targetLatLng = layer.getLatLng();
+                }
+            });
+
+            if (!targetLatLng) {
+                alert('École non trouvée.');
+                return;
+            }
+
+            // Supprimer l'itinéraire précédent
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            // Tracer l'itinéraire avec l'API OSRM
+            const routingUrl = `https://router.project-osrm.org/route/v1/driving/${userLatLng[1]},${userLatLng[0]};${targetLatLng.lng},${targetLatLng.lat}?overview=full&geometries=geojson`;
+
+            $.getJSON(routingUrl, function (data) {
+                const route = data.routes[0];
+                const distance = route.distance; // Distance en mètres
+
+                // Ajouter l'itinéraire sur la carte
+                routeLayer = L.geoJSON(route.geometry, {
+                    style: { color: 'blue', weight: 4 }
+                }).addTo(map);
+
+                // Afficher la distance
+                $('#distanceInfo').text(`Distance : ${Math.round(distance)} mètres`);
+            }).fail(function () {
+                alert('Erreur lors du calcul de l\'itinéraire.');
+            });
+        });
+
+        // Appliquer un buffer autour de la position de l'utilisateur
+        $('#applyBuffer').on('click', function () {
+            const radius = parseFloat($('#bufferRadius').val());
+
+            if (!userLatLng) {
+                alert('Veuillez d\'abord indiquer votre position en cliquant sur "Ma position".');
+                return;
+            }
+
+            if (isNaN(radius) || radius <= 0) {
+                alert('Veuillez entrer un rayon valide en mètres.');
+                return;
+            }
+
+            // Supprimer le buffer précédent
+            if (bufferCircle) {
+                map.removeLayer(bufferCircle);
+            }
+
+            // Ajouter un cercle de buffer
+            bufferCircle = L.circle(userLatLng, { radius: radius, color: 'green', fillOpacity: 0.2 }).addTo(map);
+
+            // Calculer les distances des écoles dans le buffer
+            let nearestSchool = null;
+            let farthestSchool = null;
+            let minDistance = Infinity;
+            let maxDistance = 0;
+            let schoolsInBuffer = 0;
+
+            schoolsLayer.eachLayer(function (layer) {
+                const schoolLatLng = layer.getLatLng();
+                const distance = map.distance(userLatLng, schoolLatLng);
+
+                if (distance <= radius) {
+                    schoolsInBuffer++;
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestSchool = layer;
+                    }
+
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                        farthestSchool = layer;
+                    }
+                }
+            });
+
+            if (nearestSchool) {
+                L.circle(nearestSchool.getLatLng(), { radius: 25, color: 'red' }).addTo(map);
+            }
+
+            if (farthestSchool) {
+                L.circle(farthestSchool.getLatLng(), { radius: 25, color: 'red' }).addTo(map);
+            }
+
+            alert(`Nombre d'écoles dans le buffer : ${schoolsInBuffer}\nÉcole la plus proche : ${nearestSchool ? nearestSchool.feature.properties.nom_etabli : 'Aucune'} (${Math.round(minDistance)} mètres)\nÉcole la plus éloignée : ${farthestSchool ? farthestSchool.feature.properties.nom_etabli : 'Aucune'} (${Math.round(maxDistance)} mètres)`);
+        });
+        
+    </script>
+</body>
+</html>

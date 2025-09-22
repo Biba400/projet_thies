@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Quartiers avec Diagramme</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Style de la navbar */
+        .navbar {
+            background-color: #2ca8e2;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+            width: 100%;
+        }
+
+        .navbar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        #map {
+            width: 70%; /* 70% de la largeur pour la carte */
+            height: 100vh;
+            float: left;
+        }
+
+        #chart-container {
+            width: 30%; /* 30% de la largeur pour le diagramme */
+            height: 100vh;
+            float: right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            max-width: 90%;
+            max-height: 90%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar avec 4 boutons -->
+    <div class="navbar">
+        <a href="http://localhost/thiespfc/index.html">Projet</a>
+        <a href="http://localhost/thiespfc/itineraire.html">Itinéraire</a>
+        <a href="http://localhost/thiespfc/stat.html">Infos/buffer</a>
+        <a href="http://localhost/thiespfc/stat.html">Rechercher/Ecole</a>
+    </div>
+
+    <!-- Carte -->
+    <div id="map"></div>
+
+    <!-- Container du diagramme -->
+    <div id="chart-container">
+        <canvas id="population-chart"></canvas>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        
+        // Initialisation de la carte
+        const map = L.map('map').setView([14.8, -16.9], 13); // Centre sur Thiès
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Couleurs pour les quartiers
+        function getColor(population) {
+            return population > 30000 ? '#800026' :
+                   population > 20000 ? '#BD0026' :
+                   population > 10000 ? '#E31A1C' :
+                   population > 5000 ? '#FC4E2A' :
+                   population > 1000 ? '#FD8D3C' :
+                   population > 500 ? '#FEB24C' :
+                   '#FFEDA0';
+        }
+
+        // Ajout des quartiers (remplacez par votre GeoJSON)
+        fetch('quartieravecpop.php')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: feature => ({
+                        fillColor: getColor(feature.properties.population),
+                        weight: 1,
+                        opacity: 1,
+                        color: 'white',
+                        fillOpacity: 0.7
+                    }),
+                }).addTo(map);
+                createChart(data.features); // Création du diagramme
+            });
+
+        // Création du diagramme en courbe
+        function createChart(features) {
+            const labels = features.map(f => f.properties.quartier); // Noms des quartiers
+            const populations = features.map(f => f.properties.population); // Populations des quartiers
+
+            const ctx = document.getElementById('population-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line', // Graphique en courbe
+                data: {
+                    labels: labels, // Noms des quartiers en X
+                    datasets: [{
+                        label: 'Population par Quartier',
+                        data: populations, // Population en Y
+                        borderColor: '#4CAF50', // Couleur de la courbe
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)', // Couleur de l'aire sous la courbe
+                        fill: true, // Remplir l'aire sous la courbe
+                        tension: 0.1 // Lissage de la courbe
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: true, // Sauter les labels trop longs
+                                maxRotation: 90, // Rotation des labels sur l'axe X
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.label}: ${context.raw} habitants`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        
+    </script>
+</body>
+</html>

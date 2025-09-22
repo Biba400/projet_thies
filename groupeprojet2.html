@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accueil | Abdoul Amadou Diack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
+  <style>
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1s ease-out, transform 1s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-[Poppins]">
+    <header class="fixed top-0 left-0 w-full z-50 p-6 shadow-lg flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-blue-500 to-green-500 dark:from-gray-800 dark:to-gray-700">
+        <div>
+          <h1 class="text-3xl font-bold text-white dark:text-white">Abdoul Amadou Diack</h1>
+          <p class="text-sm text-white dark:text-gray-300">Portfolio de projets en Géomatique</p>
+        </div>
+        <button onclick="document.documentElement.classList.toggle('dark')" class="bg-white text-black px-4 py-2 mt-4 md:mt-0 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-white transition duration-300">
+          Mode
+        </button>
+      </header>
+      
+
+      <section class="text-center py-12 mt-32 fade-in">
+        <img src="biba.jpg" alt="Photo de Abdoul" class="w-40 h-40 rounded-full mx-auto shadow-xl">
+        <p class="mt-6 max-w-2xl mx-auto text-lg">
+          Je suis Technicien Supérieur en Géomatique, diplômé de l’Université Iba Der Thiam de Thiès. Cette page regroupe mes projets majeurs réalisés dans le domaine de la géomatique, de la cartographie et de l'aménagement du territoire.
+        </p>
+      </section>
+      
+
+  <section class="px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10 fade-in">
+    <div class="transition duration-700 hover:scale-105">
+      <video class="rounded-xl shadow-lg w-full" controls src="vidsong.mp4"></video>
+      <p class="mt-4">Cartographie du réseau Géodésique du Sénégal : Ce projet visait à représenter les points géodésiques de référence sur le territoire sénégalais.</p>
+    </div>
+    <div class="transition duration-700 hover:scale-105">
+      <video class="rounded-xl shadow-lg w-full" controls src="ecole.mp4"></video>
+      <p class="mt-4">Cartographie des infrastructures éducatives de la ville de Thiès : Projet pour visualiser la répartition des écoles et leur accessibilité.</p>
+    </div>
+    <div class="transition duration-700 hover:scale-105">
+      <video class="rounded-xl shadow-lg w-full" controls src="uidt.mp4"></video>
+      <p class="mt-4">Cartographie de l'occupation du sol de l’UIDT : Analyse des types d’occupation (urbain, rural, végétation) à l’aide d’images satellites.</p>
+    </div>
+    <div class="transition duration-700 hover:scale-105">
+      <video class="rounded-xl shadow-lg w-full" controls src="simulation.mp4"></video>
+      <p class="mt-4">Simulation de mouvement entre ma position et une infrastructure selon le moyen de transport choisi : Application dynamique d’aide à la navigation géographique.</p>
+    </div>
+    <div class="transition duration-700 hover:scale-105">
+      <video class="rounded-xl shadow-lg w-full" controls src="tableaubord.mp4"></video>
+      <p class="mt-4">Tableau de bord des statistiques par région (Nombre de point du pemier ordre et nombre de point du second ordre) à travers un tableau récaputilatif, d'un diagramme en barre ou camembert ou en ligne.</p>
+    </div>
+    <div class="transition duration-700 hover:scale-105">
+      <video class="rounded-xl shadow-lg w-full" controls src="commune.mp4"></video>
+      <p class="mt-4">Découvrez le géoportail de Ndiayène Pendao : un outil moderne pour explorer et gérer notre territoire.</p>
+    </div>
+  </section>
+
+  <section class="px-6 py-10 fade-in">
+    <h2 class="text-2xl font-bold mb-6">Objectif du projet global</h2>
+    <p class="max-w-3xl">Ce projet global a pour objectif de centraliser mes compétences à travers une plateforme immersive, interactive et professionnelle afin de promouvoir la Géomatique et son utilité dans la gestion des territoires, la planification, l'aide à la décision et l'analyse spatiale.</p>
+  </section>
+
+  <section class="px-6 py-10 fade-in">
+    <h2 class="text-2xl font-bold mb-6">Termes Clés</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <button onclick="showTerm('geomatique')" class="bg-blue-100 dark:bg-gray-700 p-4 rounded-xl hover:shadow transition duration-300">Géomatique</button>
+      <button onclick="showTerm('cadastre')" class="bg-blue-100 dark:bg-gray-700 p-4 rounded-xl hover:shadow transition duration-300">Cadastre</button>
+      <button onclick="showTerm('procasef')" class="bg-blue-100 dark:bg-gray-700 p-4 rounded-xl hover:shadow transition duration-300">PROCASEF</button>
+      <button onclick="showTerm('anat')" class="bg-blue-100 dark:bg-gray-700 p-4 rounded-xl hover:shadow transition duration-300">ANAT</button>
+      <button onclick="showTerm('onges')" class="bg-blue-100 dark:bg-gray-700 p-4 rounded-xl hover:shadow transition duration-300">ONGES</button>
+      <button onclick="showTerm('dgid')" class="bg-blue-100 dark:bg-gray-700 p-4 rounded-xl hover:shadow transition duration-300">DGID</button>
+    </div>
+    <div id="term-description" class="mt-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow hidden transition-all duration-500"></div>
+  </section>
+
+  <footer class="bg-gray-100 dark:bg-gray-800 p-6 text-center mt-10">
+    <p class="text-sm">Contact : diackibrahima447@gmail.com | +221 78 400 99 96</p>
+    <p class="text-xs mt-2">&copy; 2025 Abdoul Amadou Diack. Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    const terms = {
+      geomatique: "La géomatique regroupe l'ensemble des outils et méthodes permettant d'acquérir, représenter, analyser et intégrer des données géographiques.",
+      cadastre: "Le cadastre est un registre public décrivant les propriétés foncières d’un territoire.",
+      procasef: "Programme de Cadastre et Sécurisation Foncière au Sénégal.",
+      anat: "Agence Nationale de l'Aménagement du Territoire : Elle coordonne les politiques d’aménagement au Sénégal.",
+      onges: "Organisations Non Gouvernementales engagées dans la gestion de l’environnement et du territoire.",
+      dgid: "Direction Générale des Impôts et des Domaines, en charge de la fiscalité foncière."
+    };
+
+    function showTerm(term) {
+      const description = document.getElementById('term-description');
+      description.innerText = terms[term];
+      description.classList.remove('hidden');
+    }
+
+    // Ajouter la classe visible aux éléments en vue
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

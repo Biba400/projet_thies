@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portail Géomatique - Accueil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background-color: #0c0f18; color: #fff; line-height: 1.6; overflow-x: hidden; }
+    header { padding: 2rem; text-align: center; background: linear-gradient(90deg, #011627, #1e3a8a); }
+    header h1 { font-size: 2.5rem; }
+    .typed-text { color: #38bdf8; font-weight: bold; }
+
+    .section { padding: 4rem 2rem; max-width: 1200px; margin: auto; }
+    .section-title { font-size: 2rem; margin-bottom: 2rem; text-align: center; position: relative; }
+    .section-title::after {
+      content: ''; height: 3px; width: 60px; background: #38bdf8;
+      position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%);
+    }
+
+    .panel {
+      background: #1f2937; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      margin-bottom: 2rem; transition: transform 0.3s ease;
+    }
+    .panel:hover { transform: scale(1.01); }
+
+    .panel button {
+      background: #38bdf8; color: #000; border: none; padding: 0.5rem 1rem; border-radius: 5px;
+      cursor: pointer; margin-top: 1rem;
+    }
+
+    .reveal-text p {
+      opacity: 0; transform: translateY(20px); transition: all 0.5s ease-in-out;
+    }
+    .reveal-text.visible p { opacity: 1; transform: translateY(0); }
+
+    footer {
+      background: #111827; color: #9ca3af; padding: 2rem; text-align: center;
+    }
+
+    .link-btn {
+      background: none; color: #38bdf8; border: none; text-decoration: underline; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Bienvenue sur mon Portail de Projets en <span class="typed-text"></span></h1>
+</header>
+
+<section class="section">
+  <h2 class="section-title">À propos de moi</h2>
+  <div class="panel" data-aos="fade-up">
+    <p>Passionné par la <strong>géomatique</strong>, les systèmes de référence, le cadastre et l’aménagement du territoire, je suis diplômé en géographie appliquée avec une spécialisation en SIG et télédétection. J’ai travaillé sur des projets avec la <strong>DGID</strong>, <strong>SONACOS</strong>, et le <strong>PROCASEF</strong>.</p>
+    <button onclick="toggleReveal('parcours')">Mon parcours professionnel</button>
+    <div id="parcours" class="reveal-text"></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Mes projets</h2>
+
+  <div class="panel" data-aos="fade-right">
+    <h3>Projet 1: WebSIG Cadastre</h3>
+    <p>Un portail interactif pour la gestion cadastrale de la commune de Thiès avec Leaflet, PostgreSQL et PHP.</p>
+    <button class="link-btn" onclick="location.href='projet1.html'">Voir le projet</button>
+  </div>
+
+  <div class="panel" data-aos="fade-left">
+    <h3>Projet 2: Application PROCASEF</h3>
+    <p>Application SIG web pour l’identification des terroirs dans le cadre du projet PROCASEF avec outils de géoréférencement.</p>
+    <button class="link-btn" onclick="location.href='projet2.html'">Voir le projet</button>
+  </div>
+
+  <div class="panel" data-aos="fade-right">
+    <h3>Projet 3: Analyse Géoïde & Référencement</h3>
+    <p>Analyse approfondie des systèmes de référence géographiques au Sénégal : Elipsoïde, projection UTM, Datum WGS84.</p>
+    <button class="link-btn" onclick="location.href='projet3.html'">Voir le projet</button>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Galerie & Médias</h2>
+  <div class="panel" data-aos="zoom-in">
+    <p>Découvrez mes projets en images et vidéos (mettre des liens ci-dessous) :</p>
+    <ul>
+      <li><a href="#" target="_blank">[Lien vers une image du projet cadastral]</a></li>
+      <li><a href="#" target="_blank">[Vidéo de présentation du projet PROCASEF]</a></li>
+      <li><a href="#" target="_blank">[Infographie sur les systèmes de référence]</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2025 - Réalisé par [Votre nom]. Tous droits réservés.</p>
+</footer>
+
+<script>
+  const typed = new Typed('.typed-text', {
+    strings: ['Géomatique', 'Cadastre', 'Aménagement', 'SIG', 'Télédétection'],
+    typeSpeed: 60,
+    backSpeed: 40,
+    loop: true
+  });
+
+  function toggleReveal(id) {
+    const el = document.getElementById(id);
+    el.innerHTML = el.innerHTML === '' ? `
+      <p>✔ Licence en Géographie Appliquée, Université de Thiès</p>
+      <p>✔ Stage à la DGID sur l’intégration cadastrale</p>
+      <p>✔ Consultant SIG au sein du projet PROCASEF</p>
+      <p>✔ Participation aux travaux d’aménagement SONACOS</p>
+    ` : '';
+    el.classList.toggle('visible');
+  }
+
+  AOS.init();
+</script>
+
+</body>
+</html>

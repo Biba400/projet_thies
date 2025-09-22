@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Assistant IA pour Géomètres</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f9f9f9; }
+    #chatbox { border: 1px solid #ccc; padding: 10px; background: #fff; max-width: 600px; margin: auto; }
+    .message { margin-bottom: 10px; }
+    .user { color: blue; }
+    .bot { color: green; }
+  </style>
+</head>
+<body>
+
+  <h2>Assistant IA – Géomètres & Topographes Sénégal</h2>
+
+  <div id="chatbox">
+    <div id="messages"></div>
+
+    <input type="text" id="question" placeholder="Posez votre question..." style="width: 80%;">
+    <button onclick="askQuestion()">Envoyer</button>
+    <button onclick="startVoice()" id="voiceBtn">🎤 Parler</button>
+  </div>
+
+  <script>
+    function appendMessage(sender, text) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      msg.innerText = (sender === 'user' ? 'Vous: ' : 'IA: ') + text;
+      document.getElementById('messages').appendChild(msg);
+    }
+  
+    async function askQuestion() {
+      const question = document.getElementById('question').value;
+      if (!question.trim()) return;
+      appendMessage('user', question);
+      document.getElementById('question').value = '';
+  
+      const response = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: question })
+      });
+  
+      const data = await response.json();
+      appendMessage('bot', data.answer);
+    }
+  
+    // 🎤 Fonction pour activer la reconnaissance vocale
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'fr-FR'; // Langue française
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+  
+      recognition.onstart = () => {
+        document.getElementById('voiceBtn').innerText = '🎙️ Écoute...';
+      };
+  
+      recognition.onerror = (event) => {
+        alert("Erreur vocale : " + event.error);
+      };
+  
+      recognition.onend = () => {
+        document.getElementById('voiceBtn').innerText = '🎤 Parler';
+      };
+  
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('question').value = text;
+        askQuestion(); // Envoie directement la question
+      };
+  
+      recognition.start();
+    }
+  </script>
+  <script>
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'fr-FR';
+      utter.pitch = 1;
+      utter.rate = 1;
+      synth.speak(utter);
+    }
+  
+    function appendMessage(sender, text) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      msg.innerText = (sender === 'user' ? 'Vous: ' : 'IA: ') + text;
+      document.getElementById('messages').appendChild(msg);
+  
+      if (sender === 'bot') {
+        speak(text); // 🔊 Répond vocalement quand l'IA parle
+      }
+    }
+  </script>
+  
+
+</body>
+</html>

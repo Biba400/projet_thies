@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Géoportail WebSIG - Accueil</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+
+    <style>
+        /* Définir la taille de la carte */
+        #map {
+            top: 50px; /* Décale la carte de 100px du haut de la page */
+            left: 0; /* Positionne la carte complètement à gauche */
+            height: 540px;
+            width: 100%; /* La carte occupe 70% de la largeur de la page */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-right: 0; /* Supprime la marge à droite */
+            position: absolute; /* Permet à 'left' de fonctionner correctement */
+        }
+        /* Style pour l'en-tête */
+        /* Style pour le header */
+header {
+    width: 100%;
+    background-color:  #005f99;
+    color:white;
+    padding: 10px 0;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    height: 50px; /* Augmenter légèrement la hauteur pour faire de la place au bouton */
+    position: relative; /* Permet de positionner le bouton au bon endroit */
+}
+
+/* Style pour le titre */
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+/* Style pour le sous-titre */
+header p {
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+/* Positionnement des drapeaux */
+header img {
+    position: absolute;
+    top: 10px;
+    width: 50px;
+    height: auto;
+}
+
+header img.left {
+    left: 10px; /* Positionne l'image à gauche */
+}
+
+header img.right {
+    right: 10px; /* Positionne l'image à droite */
+}
+/* Conteneur des boutons */
+.button-container {
+    position: absolute;
+    top: 45px;
+    left: 60px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100000000000000000; /* Assurez-vous que les boutons sont au-dessus de la carte */
+}
+
+/* Style des boutons */
+.button-container button {
+    font-size: 0.8rem; /* Réduit la taille du texte des boutons */
+    padding: 5px 12px; /* Réduit l'espace autour du texte dans les boutons */
+    margin: 5px; /* Espacement entre les boutons */
+    background-color: rgb(99, 154, 199);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Effet au survol des boutons */
+.button-container button:hover {
+    background-color: rgb(24, 6, 6);
+}
+
+
+
+        /* Style pour le pied de page */
+        footer {
+            background-color:  #005f99;
+            color:white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+        }
+
+
+
+
+        footer img {
+            position: absolute;
+            bottom: 0;
+            width: 50px;
+            height: auto;
+        }
+        
+        footer img.left {
+            left: 0px; /* Positionne l'image à gauche */
+            width: 160px; /* Augmente la largeur de l'image */
+            height: auto; /* Conserve la proportion de l'image */
+        }
+        
+        footer img.right {
+            right: 0px; /* Positionne l'image à droite */
+            width: 160px; /* Augmente la largeur de l'image */
+            height: auto; /* Conserve la proportion de l'image */
+        }
+         
+
+
+        #control-panel {
+            width: 20%;
+            height: 100vh;
+            float: right;
+            padding: 20px;
+           
+        }
+
+
+        /* Modale */
+
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+ /* Style pour positionner le bouton en bas à droite */
+ .leaflet-control-search {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+
+
+    </style>
+</head>
+
+<body>
+
+    
+
+
+    <div id="map"></div>
+<div id="control-panel">
+    <button id="my-position">Ma position</button>
+    <button id="buffer-button">Valeur Buffer</button>
+    <input type="number" id="buffer-value" placeholder="Entrez un rayon en mètres" style="display: none;">
+    <button id="validate-buffer" style="display: none;">Valider</button>
+    <input type="text" id="schoolSearch" placeholder="Rechercher une école">
+<button id="searchSchool">Rechercher</button>
+</div>
+
+    <!-- En-tête -->
+<header>
+    <img src="https://cdn3.vectorstock.com/i/1000x1000/33/42/senegal-map-and-flag-vector-47333342.jpg" alt="Drapeau Sénégal" class="left">
+
+    <p>Gestion de l'accessibilité aux infrastructures de la ville de Thiès</p>
+    <img src="https://cdn3.vectorstock.com/i/1000x1000/33/42/senegal-map-and-flag-vector-47333342.jpg" alt="Drapeau Sénégal" class="right">
+</header>
+
+<!-- Conteneur des boutons positionnés sur la carte -->
+<div class="button-container">
+    <a href="http://localhost/thiespfc/templatepageaccueil/index.html">
+        <button type="button" class="btn-accueil">Page Accueil</button>
+    </a>
+
+    <a href="http://localhost/thiespfc/index2.html">
+        <button type="button" class="btn-style">Style Sous Statut</button>
+    </a>
+
+    <a href="http://localhost/thiespfc/demographie.html">
+        <button type="button" class="btn-demo">Données Démographiques</button>
+    </a>
+
+    <a href="http://localhost/thiespfc/formulaire.html">
+        <button type="button" class="btn-ajout">Ajouter Ecole</button>
+    </a>
+
+    <a href="http://localhost/thiespfc/modifie.html">
+        <button type="button" class="btn-modifier">Modifier Ecole</button>
+    </a>
+
+    <a href="http://localhost/thiespfc/itineraire.html">
+        <button type="button" class="btn-itineraire">Itineraire</button>
+    </a>
+
+    <a href="http://localhost/thiespfc/stat.html">
+        <button type="button" class="btn-stat">Rechercher Ecole</button>
+    </a>
+</div>
+
+    <!-- Bouton de recherche placé sur la carte -->
+
+    
+   
+   
+    
+
+    <!-- Section Carte -->
+    <div class="container">
+        <div id="map"></div>
+
+    
+        
+    <!-- Pied de page -->
+    <footer>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJYqakXg4gbn8psK3mcRT4aTXSjPdRMal2w&s" alt="Drapeau Sénégal" class="left">
+        <p>&copy; 2024 Géoportail WebSIG - Tous droits réservés</p>
+        <img src='téléchargement.jpeg' class="right">
+
+    </footer>
+
+    <!-- Lien vers les fichiers JavaScript nécessaires -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-ajax/dist/leaflet.ajax.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        var userMarker = null;
+    var bufferCircle = null;
+
+        // Initialisation de la carte
+        var map = L.map('map').setView([14.796269119486162, -16.930734080485777], 13); // Centre sur Thiès, Sénégal
+
+        // Définir les fonds de carte
+        var openStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        var esriWorldImageryLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{x}/{y}', {
+    attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+       
+
+        // Ajouter le fond de carte par défaut
+        openStreetMapLayer.addTo(map);
+
+        // Définir les icônes
+        var iconPublic = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/128/3074/3074078.png',
+            iconSize: [15, 15],
+            iconAnchor: [12, 25],
+            popupAnchor: [0, -25]
+        });
+
+        var iconPrive = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/128/3074/3074078.png',
+            iconSize: [15, 15],
+            iconAnchor: [12, 25],
+            popupAnchor: [0, -25]
+        });
+
+// Ajouter la légende à la carte
+var legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function () {
+    var div = L.DomUtil.create('div', 'legend');
+    div.innerHTML = `
+        <h4>Légende</h4>
+        <div><img src="https://cdn-icons-png.flaticon.com/128/3074/3074078.png" style="width: 15px; height: 15px; vertical-align: middle;"> Infrastructures</div>
+        <div style="display: flex; align-items: center;">
+            <span style="display: inline-block; width: 20px; height: 20px; background: #FFFFFF; border: 2px solid #000;"></span>
+            <span style="margin-left: 5px;">Quartiers</span>
+        </div>
+    `;
+    return div;
+};
+
+// Ajouter la légende au contrôle Leaflet
+legend.addTo(map);
+
+        // Créer des groupes de couches
+        var ecoleLayer = new L.LayerGroup();
+        var regionLayer = new L.LayerGroup();
+        var quartierLayer = new L.LayerGroup();
+
+
+
+
+        
+
+        // Couche des écoles
+var ecoleLayer = L.layerGroup().addTo(map);
+
+// Fonction pour charger et afficher les données
+function loadEcoles(filterType) {
+    fetch('ecole.php')
+        .then(response => response.json())
+        .then(data => {
+            ecoleLayer.clearLayers(); // Supprimer les données existantes
+
+            L.geoJSON(data, {
+                filter: function (feature) {
+                    if (!filterType) return true; // Afficher tout si aucun filtre
+                    return feature.properties.statut === filterType;
+                },
+                pointToLayer: function (feature, latlng) {
+                    var statut = feature.properties.statut;
+                    var icon = statut === 'Public' ? iconPublic : iconPrive;
+                    return L.marker(latlng, { icon: icon });
+                },
+                onEachFeature: function (feature, layer) {
+                    var popupContent = `
+    <b>Nom de l'école:</b> ${feature.properties.nom_etabli} <br>
+    <b>Commune:</b> ${feature.properties.c} <br>
+    <b>Statut:</b> ${feature.properties.statut} <br>
+    <b>Sous-statuts:</b> ${feature.properties.sous_statut} <br>
+    <b>Quartier:</b> ${feature.properties.quartier} <br>
+    
+    <b>Nombre d'élèves:</b> ${feature.properties.nombre_eleve} <br>
+    <b>Nombre de classes pédagogiques:</b> ${feature.properties.nombre_classe_pédagogiques} <br>
+    <b>Nombre de salles physiques:</b> ${feature.properties.nombre_salles_physiques} <br>
+    <b>Nombre d'enseignants:</b> ${feature.properties.nombre_enseignants} <br>
+    <b>Nombre de garçon:</b> ${feature.properties.garçon} <br>
+    <b>Nombre de fille:</b> ${feature.properties.fille} <br>
+    
+`;
+
+                    layer.bindPopup(popupContent);
+                }
+            }).addTo(ecoleLayer);
+        })
+        .catch(error => console.error('Erreur lors du chargement des écoles:', error));
+}
+// Fonction pour rechercher une école par son nom
+document.getElementById('searchSchool').addEventListener('click', () => {
+    const searchName = document.getElementById('schoolSearch').value.toLowerCase();
+    let foundSchool = null;
+
+    schoolLayer.eachLayer(layer => {
+        const schoolName = layer.feature.properties.nom_etabli.toLowerCase();
+        if (schoolName.includes(searchName)) {
+            foundSchool = layer;
+        }
+    });
+
+    if (foundSchool) {
+        map.setView(foundSchool.getLatLng(), 15); // Zoom sur l'école trouvée
+        foundSchool.openPopup(); // Affiche la popup
+    } else {
+        alert('Aucune école trouvée avec ce nom.');
+    }
+});
+
+
+// Ajouter le contrôle pour filtrer les écoles
+var filterControl = L.control({ position: 'topright' });
+
+filterControl.onAdd = function () {
+    var div = L.DomUtil.create('div', 'filter-control');
+    div.innerHTML = `
+        <button onclick="loadEcoles()">Toutes</button>
+        <button onclick="loadEcoles('Public')">Publiques</button>
+        <button onclick="loadEcoles('Prive')">Privées</button>
+    `;
+    div.style.background = '#005f99';
+    div.style.padding = '10px';
+    div.style.boxShadow = '0 0 5px rgba(0,0,0,0.3)';
+    div.style.marginRight = '70px'; // Décalage vers la gauche
+    div.style.borderRadius = '5px';
+    return div;
+};
+// Ajouter les contrôles de filtre à la carte
+filterControl.addTo(map);
+
+// Charger toutes les écoles au départ
+loadEcoles();
+        // Charger et ajouter les données GeoJSON pour les régions
+        fetch('region_sn.php')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        var popupContent = `
+                            <b>Nom de la région:</b> ${feature.properties.nomreg} <br>
+                            <b>Périmètre:</b> ${feature.properties.perimeter} <br>
+                            <b>Superficie:</b> ${feature.properties.superfice_} ha
+                        `;
+                        layer.bindPopup(popupContent);
+                    },
+                    style: function (feature) {
+                        return {
+                            color: "#FF9100FF",
+                            weight: 2,
+                            opacity: 1,
+                            fillColor: "#7700FFFF",
+                            fillOpacity: 0.4
+                        };
+                    }
+                }).addTo(regionLayer);
+            })
+            .catch(error => console.error('Erreur lors du chargement des régions:', error));
+// Charger et ajouter les données GeoJSON pour les quartiers
+fetch('quartiersvillethies.php')  // Remplacez par le bon fichier ou URL de votre GeoJSON
+    .then(response => response.json())
+    .then(data => {
+        L.geoJSON(data, {
+            onEachFeature: function (feature, layer) {
+                var popupContent = `
+                    <b>Nom du quartier:</b> ${feature.properties.quartier} <br>
+                    <b>Commune:</b> ${feature.properties.commune} <br>
+                    <b>Type:</b> ${feature.properties.type_qvh}
+                `;
+                layer.bindPopup(popupContent);
+            },
+            style: function (feature) {
+                return {
+                    color: "black",  // Couleur de la bordure
+                    weight: 2,        // Épaisseur de la bordure
+                    opacity: 1,       // Opacité de la bordure
+                    fillColor: "transparent",  // Enlever le remplissage (remplissage transparent)
+                    fillOpacity: 0     // Rendre l'opacité de remplissage à zéro
+                };
+            }
+        }).addTo(quartierLayer);
+    })
+    .catch(error => console.error('Erreur lors du chargement des quartiers:', error));
+
+        // Ajouter les couches au contrôle de couches
+        var baseLayers = {
+            "OpenStreetMap": openStreetMapLayer,
+            "esriWorldImagery": esriWorldImageryLayer,
+           
+        };
+
+        var overlays = {
+            "Écoles": ecoleLayer,
+            "Régions": regionLayer,
+            "Quartiers": quartierLayer 
+        };
+
+        ecoleLayer.addTo(map);
+        quartierLayer.addTo(map);
+
+        L.control.layers(baseLayers, overlays).addTo(map);
+        // Ajouter un contrôle de sélection de quartier
+var quartierSelection = L.control({position: 'bottomleft'});
+
+quartierSelection.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    div.innerHTML = `
+        <h4>Selectionner Quartiers</h4>
+        <select id="selectQuartier" multiple style="width: 200px; height: 100px;">
+            <!-- Options seront ajoutées dynamiquement -->
+        </select>
+        <br><button id="btnShow" class="btn btn-primary btn-sm mt-2">Afficher Sélectionnés</button>
+    `;
+    
+    L.DomEvent.disableClickPropagation(div);
+    return div;
+};
+
+quartierSelection.addTo(map);
+
+// Ajouter les quartiers au sélecteur
+fetch('quartiersvillethies.php')  // Remplacez par le bon fichier ou URL de votre GeoJSON
+    .then(response => response.json())
+    .then(data => {
+        var selectElement = document.getElementById('selectQuartier');
+        
+        data.features.forEach((feature, index) => {
+            var option = document.createElement('option');
+            option.value = index;
+            option.innerText = feature.properties.quartier;
+            selectElement.appendChild(option);
+        });
+    })
+    .catch(error => console.error('Erreur lors du chargement des quartiers:', error));
+
+// Fonction pour afficher les quartiers sélectionnés
+document.getElementById('btnShow').addEventListener('click', function() {
+    var selectElement = document.getElementById('selectQuartier');
+    var selectedOptions = Array.from(selectElement.selectedOptions).map(option => option.value);
+    
+    // Vider la couche actuelle des quartiers affichés
+    quartierLayer.clearLayers();
+    
+    // Ajouter les quartiers sélectionnés
+    fetch('quartiersvillethies.php')
+        .then(response => response.json())
+        .then(data => {
+            data.features.forEach((feature, index) => {
+                if (selectedOptions.includes(String(index))) {
+                    L.geoJSON(feature, {
+                        onEachFeature: function (feature, layer) {
+                            var popupContent = `
+                                <b>Nom du quartier:</b> ${feature.properties.quartier} <br>
+                                <b>Commune:</b> ${feature.properties.commune} <br>
+                                <b>Type:</b> ${feature.properties.type_qvh}
+                            `;
+                            layer.bindPopup(popupContent);
+                        },
+                        style: function (feature) {
+                            return {
+                                color: "black",  // Changez la couleur si nécessaire
+                                weight: 2,
+                                opacity: 1,
+                                fillColor: "white",
+                                fillOpacity: 0.5
+                            };
+                        }
+                    }).addTo(quartierLayer);
+                }
+            });
+        })
+        .catch(error => console.error('Erreur lors du chargement des quartiers:', error));
+});
+ // Fonction pour obtenir la position de l'utilisateur
+ document.getElementById('my-position').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var lon = position.coords.longitude;
+
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+
+            userMarker = L.marker([lat, lon]).addTo(map)
+                .bindPopup('Votre position').openPopup();
+            map.setView([lat, lon], 14); // Centrer la carte sur la position de l'utilisateur
+        }, function() {
+            alert('Impossible de récupérer la position');
+        });
+    } else {
+        alert('La géolocalisation n\'est pas supportée par votre navigateur');
+    }
+});
+
+// Afficher l'input et le bouton pour le buffer
+document.getElementById('buffer-button').addEventListener('click', function() {
+    document.getElementById('buffer-value').style.display = 'block';
+    document.getElementById('validate-buffer').style.display = 'block';
+});
+
+/// Fonction pour valider la valeur du buffer et tracer le cercle
+// Ajoutez un gestionnaire d'événements au bouton de validation
+document.getElementById('validate-buffer').addEventListener('click', function() {
+    // Récupérer la valeur entrée pour le rayon du buffer
+    var bufferRadius = parseInt(document.getElementById('buffer-value').value);
+
+    // Vérifier si la valeur est valide
+    if (isNaN(bufferRadius) || bufferRadius <= 0) {
+        // Jouer l'audio correspondant à une valeur invalide
+        var invalidAudio = new Audio('http://localhost/thiespfc/alert2.mp3');
+        invalidAudio.play();
+        return;
+    }
+
+    // Vérifier si un marqueur utilisateur est disponible
+    if (userMarker) {
+        // Supprimer le cercle précédent s'il existe
+        if (bufferCircle) {
+            map.removeLayer(bufferCircle);
+        }
+        
+        // Créer un nouveau cercle autour du marqueur utilisateur
+        bufferCircle = L.circle(userMarker.getLatLng(), {
+            color: 'blue',
+            fillColor: '#30f',
+            fillOpacity: 0.3,
+            radius: bufferRadius
+        }).addTo(map);
+        // Jouer l'audio de confirmation après avoir tracé le cercle
+        var successAudio = new Audio('http://localhost/thiespfc/alert1.mp3');
+        successAudio.play();
+    } else {
+        // Jouer l'audio correspondant à l'absence de position utilisateur
+        var noPositionAudio = new Audio('http://localhost/thiespfc/alert3.mp3');
+        noPositionAudio.play();
+    }
+});
+  </script>
+
+  <script>
+    
+    
+    
+
+</script>
+
+
+  
+
+</body>
+</html>

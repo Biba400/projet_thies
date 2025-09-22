@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abdoul Amadou Diack - Portfolio Géomatique</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Fonction pour activer/désactiver le mode sombre/clair
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      // Sauvegarder la préférence dans localStorage
+      if (document.documentElement.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // Appliquer la préférence de thème au chargement
+    window.onload = function() {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    }
+  </script>
+  <style>
+    /* Animations d'apparition des éléments */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 1.5s forwards;
+    }
+    .delay-0 { animation-delay: 0s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-600 { animation-delay: 0.6s; }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-white transition duration-500">
+
+  <!-- Barre de navigation -->
+  <header class="bg-gradient-to-r from-green-600 to-blue-700 p-6 text-white shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-3xl font-bold fade-in delay-0">Portfolio de Abdoul Amadou Diack</h1>
+      <button onclick="toggleTheme()" class="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-300">🌙 / ☀️</button>
+    </div>
+  </header>
+
+  <!-- Section contact rapide -->
+  <section class="p-6 text-center fade-in delay-300">
+    <p class="text-lg">Contact : <strong>diackibrahima@gmail.com</strong> | Tel : <strong>784009996</strong></p>
+  </section>
+
+  <!-- Menu de navigation -->
+  <nav class="flex flex-wrap justify-center gap-6 p-6">
+    <a href="#geodesique" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300">📍 Réseau Géodésique</a>
+    <a href="#educatives" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300">🏫 Infrastructures Éducatives</a>
+    <a href="#occupation" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300">🗺️ Occupation du Sol UIDT</a>
+    <a href="#transport" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300">🚗 Simulation Transport-École</a>
+  </nav>
+
+  <!-- Section Introductive -->
+  <section class="p-6 text-center">
+    <h2 class="text-2xl font-semibold mb-4 fade-in delay-600">Bienvenue dans mon univers de la géomatique !</h2>
+    <p class="fade-in delay-600">Je suis Abdoul Amadou Diack, passionné par la cartographie, le SIG et l'aménagement du territoire.</p>
+    <p class="fade-in delay-600">Découvrez mes projets innovants dans le domaine de la géomatique et explorez mon parcours professionnel.</p>
+  </section>
+
+  <!-- Section Réseau Géodésique -->
+  <section id="geodesique" class="p-6 bg-gray-100 dark:bg-gray-700 fade-in delay-0">
+    <h3 class="text-xl font-bold mb-4">📍 Cartographie des points du réseau géodésique</h3>
+    <video controls class="w-full md:w-1/2 mx-auto rounded shadow mb-4">
+      <source src="vid.mp4" type="video/mp4">
+      Votre navigateur ne supporte pas la lecture de la vidéo.
+    </video>
+    <p class="text-center">Cette cartographie présente les points géodésiques clés et leur importance dans les études géospatiales.</p>
+  </section>
+
+  <!-- Section Infrastructures Éducatives -->
+  <section id="educatives" class="p-6 fade-in delay-300">
+    <h3 class="text-xl font-bold mb-4">🏫 Cartographie des infrastructures éducatives de Thiès</h3>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white dark:bg-gray-800 p-4 shadow-lg rounded-lg">
+        <iframe class="vid.mp4" src='vid.mp4' title="Vidéo projet 1"></iframe>
+        <p class="mt-2">Analyse de l’accessibilité des infrastructures scolaires et de la couverture éducative.</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-4 shadow-lg rounded-lg">
+        <iframe class='vid.mp4' src='vid.mp4' title="Vidéo projet 2"></iframe>
+        <p class="mt-2">Propositions d’améliorations pour une meilleure distribution des écoles dans la ville.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Autres Sections (Occupation du sol et Transport) -->
+  <section id="occupation" class="p-6 fade-in delay-600">
+    <h3 class="text-xl font-bold mb-4">🗺️ Carte d'occupation du sol de l'UIDT</h3>
+    <p>Cette carte analyse l’occupation du sol dans le cadre de l'UIDT. <a href="#" class="text-blue-500 underline">Voir plus</a></p>
+  </section>
+
+  <section id="transport" class="p-6 fade-in delay-600">
+    <h3 class="text-xl font-bold mb-4">🚗 Simulation d’accès à une école selon le moyen de transport</h3>
+    <p>Simulation de l’accessibilité entre une position donnée et les écoles proches, en fonction du mode de transport choisi.</p>
+  </section>
+
+  <!-- Définitions des termes géomatiques -->
+  <section class="p-6 bg-gray-200 dark:bg-gray-800 fade-in delay-600">
+    <h3 class="text-xl font-bold mb-4">📘 Termes clés de la Géomatique</h3>
+    <details class="mb-2"><summary class="cursor-pointer font-semibold">Géomatique</summary><p class="pl-4">Ensemble des outils et techniques pour collecter, analyser et gérer des données géospatiales.</p></details>
+    <details class="mb-2"><summary class="cursor-pointer font-semibold">Cadastre</summary><p class="pl-4">Système d’enregistrement des propriétés foncières.</p></details>
+    <details class="mb-2"><summary class="cursor-pointer font-semibold">Procasef</summary><p class="pl-4">Projet de Cartographie Systématique et de Sécurisation Foncière.</p></details>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white text-center p-4 mt-6">
+    &copy; 2025 Abdoul Amadou Diack. Tous droits réservés.
+  </footer>
+
+</body>
+</html>

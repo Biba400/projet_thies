@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tableau de bord - Points par région</title>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f7fc;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Container for the dashboard */
+    .dashboard-container {
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Controls for diagram type selection */
+    .controls {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .controls select {
+      padding: 10px;
+      font-size: 1em;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      transition: 0.3s ease;
+    }
+
+    .controls select:hover {
+      border-color: #007bff;
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+      font-size: 1.1em;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* Chart Styles */
+    canvas {
+      width: 100%;
+      max-width: 900px;
+      margin: 40px auto;
+      display: block;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #777;
+    }
+
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <h1>Statistiques des Points Géodésiques par Région</h1>
+
+    <!-- Controls for selecting chart type -->
+    <div class="controls">
+      <label for="chartType">Sélectionnez le type de diagramme :</label>
+      <select id="chartType">
+        <option value="bar">Barres</option>
+        <option value="pie">Camembert</option>
+        <option value="line">Ligne</option>
+      </select>
+    </div>
+
+    <!-- Stats Table -->
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>Région</th>
+          <th>Ordre</th>
+          <th>Nombre de points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic content will go here -->
+      </tbody>
+    </table>
+
+    <!-- Chart -->
+    <canvas id="chart" width="400" height="200"></canvas>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 - Tableau de bord interactif. Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    let chart;
+    let allData = [];
+
+    async function fetchData() {
+      const response = await fetch("stat_points_regions.php");
+      const data = await response.json();
+      allData = data;
+      populateTable(data);
+      renderChart("bar");
+    }
+
+    function populateTable(data) {
+      const tbody = document.querySelector("#data-table tbody");
+      tbody.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.nomreg}</td>
+          <td>${row.ordre}</td>
+          <td>${row.total_points}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderChart(type) {
+      if (chart) chart.destroy();
+
+      // Aggregate data by region
+      const aggregated = {};
+      allData.forEach(row => {
+        if (!aggregated[row.nomreg]) aggregated[row.nomreg] = 0;
+        aggregated[row.nomreg] += parseInt(row.total_points);
+      });
+
+      const labels = Object.keys(aggregated);
+      const values = Object.values(aggregated);
+
+      const ctx = document.getElementById('chart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: type,
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total de points géodésiques',
+            data: values,
+            backgroundColor: labels.map(() => getRandomColor()),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: type !== 'bar'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    document.getElementById("chartType").addEventListener("change", (e) => {
+      renderChart(e.target.value);
+    });
+
+    function getRandomColor() {
+      return `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+    }
+
+    fetchData();
+  </script>
+
+</body>
+</html>

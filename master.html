@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Géoportail GRS - Mémoire de Master</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    main {
+      flex: 1 0 auto;
+    }
+    footer {
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <header class="bg-blue-900 text-white py-6 shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Géoportail intelligent du Sénégal</h1>
+      <nav>
+        <ul class="flex space-x-4">
+          <li><a href="#accueil" onclick="showSection('accueil')" class="hover:underline">Accueil</a></li>
+          <li><a href="#carte" onclick="showSection('carte')" class="hover:underline">Carte</a></li>
+          <li><a href="#planification" onclick="showSection('planification')" class="hover:underline">Planification</a></li>
+          <li><a href="#contact" onclick="showSection('contact')" class="hover:underline">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-10">
+    <section id="accueil" class="section">
+      <h2 class="text-xl font-semibold mb-4">Bienvenue sur le Géoportail</h2>
+      <p class="mb-6">Ce portail a pour but de moderniser la gestion des repères géodésiques et des stations CORS du Sénégal dans le cadre d'un mémoire de master. Il permet la visualisation, le suivi, et la planification intelligente des levés GNSS.</p>
+    </section>
+
+    <section id="carte" class="section hidden">
+      <h2 class="text-xl font-semibold mb-4">Carte Interactive</h2>
+      <div id="map" class="h-[600px] rounded-lg shadow-md"></div>
+    </section>
+
+    <section id="planification" class="section hidden">
+      <h2 class="text-xl font-semibold mb-4">Planification GNSS</h2>
+      <form id="form-planification" class="space-y-4">
+        <div>
+          <label for="latitude" class="block font-medium">Latitude :</label>
+          <input type="text" id="latitude" name="latitude" class="border rounded px-3 py-2 w-full">
+        </div>
+        <div>
+          <label for="longitude" class="block font-medium">Longitude :</label>
+          <input type="text" id="longitude" name="longitude" class="border rounded px-3 py-2 w-full">
+        </div>
+        <div>
+          <label for="methode" class="block font-medium">Méthode préférée :</label>
+          <select id="methode" name="methode" class="border rounded px-3 py-2 w-full">
+            <option value="auto">Automatique</option>
+            <option value="rtk">RTK</option>
+            <option value="statique">Statique</option>
+            <option value="ppk">PPK</option>
+          </select>
+        </div>
+        <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800">Lancer la planification</button>
+      </form>
+      <div id="resultat-planification" class="mt-6"></div>
+    </section>
+
+    <section id="contact" class="section hidden">
+      <h2 class="text-xl font-semibold mb-4">Contact</h2>
+      <p>Pour toute question ou suggestion, contactez-nous à l'adresse : <a href="mailto:contact@geoportail.sn" class="text-blue-700 underline">contact@geoportail.sn</a></p>
+    </section>
+  </main>
+
+  <footer class="bg-blue-900 text-white text-center py-4 mt-auto">
+    <p>&copy; 2025 Géoportail GRS - Projet de Mémoire | Université XYZ</p>
+  </footer>
+
+  <script>
+    function showSection(id) {
+      $('.section').addClass('hidden');
+      $('#' + id).removeClass('hidden');
+    }
+
+    const map = L.map('map').setView([14.75, -17.45], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const reperes = Array.from({ length: 30 }, (_, i) => {
+      return {
+        id: `RG${String(i + 1).padStart(3, '0')}`,
+        nom: `Repère ${i + 1}`,
+        type: i % 5 === 0 ? 'CORS' : 'passif',
+        lat: 14.5 + (Math.random() * 2),
+        lon: -17.6 + (Math.random() * 1.5),
+        etat: ['Bon', 'Endommagé', 'Introuvable'][i % 3],
+        precision: `${Math.random().toFixed(2)} m`,
+        date: `202${i % 5}-0${(i % 9) + 1}-15`
+      };
+    });
+
+    reperes.forEach(r => {
+      const icon = L.icon({
+        iconUrl: r.type === 'CORS' ? 'https://cdn-icons-png.flaticon.com/512/684/684908.png' : 'https://cdn-icons-png.flaticon.com/512/535/535234.png',
+        iconSize: [28, 28],
+        iconAnchor: [14, 28],
+        popupAnchor: [0, -28]
+      });
+
+      const marker = L.marker([r.lat, r.lon], { icon }).addTo(map);
+      marker.bindPopup(`
+        <div>
+          <strong>${r.nom}</strong><br>
+          <b>ID:</b> ${r.id}<br>
+          <b>Type:</b> ${r.type}<br>
+          <b>État:</b> ${r.etat}<br>
+          <b>Précision:</b> ${r.precision}<br>
+          <b>Date d'installation:</b> ${r.date}
+        </div>
+      `);
+    });
+  </script>
+
+</body>
+</html>

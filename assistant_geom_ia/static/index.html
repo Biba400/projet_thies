@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconnaissance vocale et chatbot</title>
+</head>
+<body>
+    <h1>Posez votre question</h1>
+    
+    <!-- Bouton pour démarrer l'enregistrement vocal -->
+    <button id="start-btn">Démarrer l'enregistrement vocal</button>
+    
+    <!-- Affichage du statut de l'enregistrement -->
+    <p id="status"></p>
+    
+    <!-- Champ pour afficher la question transcrite -->
+    <textarea id="question" placeholder="Votre question ici..."></textarea><br><br>
+    
+    <!-- Bouton pour envoyer la question -->
+    <button id="submit-btn">Envoyer la question</button>
+    
+    <!-- Affichage de la réponse -->
+    <p id="response"></p>
+
+    <script>
+        // Vérification du support de la reconnaissance vocale
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';  // Langue du microphone (français)
+            recognition.interimResults = true; // Afficher la transcription avant la fin de l'enregistrement
+
+            // Récupération des éléments du DOM
+            const startBtn = document.getElementById('start-btn');
+            const questionField = document.getElementById('question');
+            const statusField = document.getElementById('status');
+            const submitBtn = document.getElementById('submit-btn');
+            const responseField = document.getElementById('response');
+
+            // Démarrer l'enregistrement vocal
+            startBtn.addEventListener('click', () => {
+                recognition.start();
+                statusField.textContent = 'Enregistrement en cours...';
+            });
+
+            // Lorsque la reconnaissance vocale donne un résultat
+            recognition.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+
+                questionField.value = transcript;  // Afficher la transcription dans le champ de question
+            };
+
+            // Lorsque l'enregistrement vocal est terminé
+            recognition.onspeechend = function() {
+                recognition.stop();  // Arrêter l'enregistrement
+                statusField.textContent = 'Enregistrement terminé';
+            };
+
+            recognition.onerror = function(event) {
+                statusField.textContent = `Erreur: ${event.error}`;  // Afficher les erreurs
+            };
+
+            // Lorsqu'on clique sur "Envoyer la question"
+            submitBtn.addEventListener('click', async () => {
+                const question = questionField.value;
+
+                if (!question) {
+                    responseField.textContent = 'Veuillez poser une question.';
+                    return;
+                }
+
+                // Envoi de la question au backend Flask
+                const response = await fetch('http://127.0.0.1:5000/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await response.json();
+                responseField.textContent = 'Réponse : ' + data.answer;
+
+                // Lire la réponse avec la synthèse vocale
+                speakText(data.answer);
+            });
+        } else {
+            alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
+        }
+
+        // Fonction pour la synthèse vocale (text-to-speech)
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'fr-FR';  // Langue de la réponse (français)
+            window.speechSynthesis.speak(utterance);  // Lire la réponse
+        }
+    </script>
+</body>
+</html>
