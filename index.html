@@ -573,7 +573,7 @@ document.getElementById('validate-buffer').addEventListener('click', function() 
     // Vérifier si la valeur est valide
     if (isNaN(bufferRadius) || bufferRadius <= 0) {
         // Jouer l'audio correspondant à une valeur invalide
-        var invalidAudio = new Audio('http://localhost/thiespfc/alert2.mp3');
+        var invalidAudio = new Audio('alert2.mp3');
         invalidAudio.play();
         return;
     }
@@ -593,11 +593,11 @@ document.getElementById('validate-buffer').addEventListener('click', function() 
             radius: bufferRadius
         }).addTo(map);
         // Jouer l'audio de confirmation après avoir tracé le cercle
-        var successAudio = new Audio('http://localhost/thiespfc/alert1.mp3');
+        var successAudio = new Audio('alert1.mp3');
         successAudio.play();
     } else {
         // Jouer l'audio correspondant à l'absence de position utilisateur
-        var noPositionAudio = new Audio('http://localhost/thiespfc/alert3.mp3');
+        var noPositionAudio = new Audio('alert3.mp3');
         noPositionAudio.play();
     }
 });
